@@ -5,7 +5,7 @@ export default function HomePage() {
                 A smart assistant for managing projects with integration of calendars and task trackers.
             </p>
             <p style={{ color: "gray", fontStyle: "italic", textAlign: "center" }}>
-                You must be logged in to use the project management features.
+                Please log in to access the full functionality.
             </p>
         </div>
     );
