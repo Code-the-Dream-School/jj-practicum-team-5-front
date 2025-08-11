@@ -66,7 +66,7 @@ export default function Timeline({ steps = [] }) {
                             {steps.map((step, index) => (
                                 <div
                                     key={index}
-                                    className="flex flex-col items-center relative z-10"
+                                    className="flex flex-col items-center relative z-10 w-24"
                                 >
                                     <div
                                         className={`
