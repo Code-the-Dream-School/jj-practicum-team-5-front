@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 
 export default function Timeline({ steps = [] }) {
     const [selectedStep, setSelectedStep] = useState(null);
@@ -10,7 +10,7 @@ export default function Timeline({ steps = [] }) {
                 return "bg-emerald-500 border-emerald-200";
             case "in-progress":
                 return "bg-amber-500 border-amber-200";
-            case "not-started":
+            case "not started":
                 return "bg-slate-400 border-slate-200";
             case "overdue":
                 return "bg-rose-500 border-rose-200";
@@ -25,7 +25,7 @@ export default function Timeline({ steps = [] }) {
                 return "✓";
             case "in-progress":
                 return "⏳";
-            case "not-started":
+            case "not started":
                 return "○";
             case "overdue":
                 return "!";
@@ -38,7 +38,7 @@ export default function Timeline({ steps = [] }) {
         const statusConfig = {
             "completed": { color: "bg-emerald-100 text-emerald-800", text: "Complete" },
             "in-progress": { color: "bg-amber-100 text-amber-800", text: "In process" },
-            "not-started": { color: "bg-slate-100 text-slate-800", text: "Not started" },
+            "not started": { color: "bg-slate-100 text-slate-800", text: "Not started" },
             "overdue": { color: "bg-rose-100 text-rose-800", text: "Overdue" },
         };
 
@@ -58,43 +58,48 @@ export default function Timeline({ steps = [] }) {
                 </div>
             ) : (
                 <>
-                    <div className="relative pb-8">
-                        {/* Линия, соединяющая шаги */}
-                        <div className="absolute top-8 left-0 right-0 h-0.5 bg-gray-300"></div>
-
-                        <div className="flex justify-between relative">
+                    <div className="pb-8">
+                        <div className="flex items-center justify-center">
                             {steps.map((step, index) => (
-                                <div
-                                    key={index}
-                                    className="flex flex-col items-center relative z-10 w-24"
-                                >
-                                    <div
-                                        className={`
-                                            w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-lg
-                                            border-4 cursor-pointer transition-all duration-300
-                                            ${getStepColor(step.status)}
-                                            ${hoveredStep === step ? 'scale-110 shadow-2xl' : 'shadow-lg'}
-                                        `}
-                                        onClick={() => setSelectedStep(selectedStep?.name === step.name ? null : step)}
-                                        onMouseEnter={() => setHoveredStep(step)}
-                                        onMouseLeave={() => setHoveredStep(null)}
-                                    >
-                                        <span className="text-2xl">{getStepIcon(step.status)}</span>
+                                <React.Fragment key={`fragment-${index}`}>
+                                    <div className="flex flex-col items-center">
+                                        <div
+                                            className={`
+          w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-lg
+          border-4 cursor-pointer transition-all duration-300 relative
+          ${getStepColor(step.status)}
+          ${hoveredStep === step ? 'scale-110 shadow-2xl' : 'shadow-lg'}
+        `}
+                                            onClick={() => setSelectedStep(selectedStep?.name === step.name ? null : step)}
+                                            onMouseEnter={() => setHoveredStep(step)}
+                                            onMouseLeave={() => setHoveredStep(null)}
+                                        >
+                                            <span className="text-2xl">{getStepIcon(step.status)}</span>
+                                        </div>
+
+                                        <div className="mt-4 text-center max-w-32">
+                                            <h3 className="font-semibold text-sm text-gray-800 leading-tight">
+                                                {step.name || `Step ${index + 1}`}
+                                            </h3>
+                                        </div>
+
+                                        {hoveredStep === step && (
+                                            <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50 shadow-xl">
+                                                {step.description || 'No description'}
+                                                <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
+                                            </div>
+                                        )}
                                     </div>
 
-                                    <div className="mt-4 text-center max-w-32">
-                                        <h3 className="font-semibold text-sm text-gray-800 leading-tight">
-                                            {step.name || `Step ${index + 1}`}
-                                        </h3>
-                                    </div>
-
-                                    {hoveredStep === step && (
-                                        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-10 shadow-xl">
-                                            {step.description || 'No description'}
-                                            <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
+                                    {index < steps.length - 1 && (
+                                        <div className="flex-1 max-w-32 flex items-center justify-center mx-4" style={{ marginTop: '-40px' }}>
+                                            <div className="flex items-center">
+                                                <div className="h-1 bg-gray-500 flex-1 min-w-16"></div>
+                                                <div className="w-0 h-0 border-l-8 border-l-gray-500 border-t-4 border-t-transparent border-b-4 border-b-transparent ml-1"></div>
+                                            </div>
                                         </div>
                                     )}
-                                </div>
+                                </React.Fragment>
                             ))}
                         </div>
                     </div>
