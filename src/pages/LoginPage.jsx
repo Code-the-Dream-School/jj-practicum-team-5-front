@@ -1,15 +1,19 @@
 import { useState } from "react";
+import {useNavigate} from "react-router-dom";
+
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const navigate = useNavigate();
+
     const handleSubmit = (e) => {
         e.preventDefault();
         setIsSubmitting(true);
         console.log("Login submitted:", { email, password });
-        // Simulate API call
+
         setTimeout(() => setIsSubmitting(false), 1500);
     };
 
@@ -86,9 +90,13 @@ export default function LoginPage() {
 
                 <div className="mt-8 text-center text-sm text-gray-600">
                     Don't have an account?{' '}
-                    <a href="#" className="font-medium text-indigo-600 hover:text-indigo-800 hover:underline">
+                    <button
+                        type="button"
+                        onClick={() => navigate('/signup')}
+                        className="font-medium text-indigo-600 hover:text-indigo-800 hover:underline"
+                    >
                         Sign up
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
