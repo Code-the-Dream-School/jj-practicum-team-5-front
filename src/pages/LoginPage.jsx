@@ -9,12 +9,45 @@ export default function LoginPage() {
 
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
-        console.log("Login submitted:", { email, password });
+        console.log("Login submitted:", {email, password});
 
         setTimeout(() => setIsSubmitting(false), 1500);
+
+        try {
+            const response = await fetch('/api/v1/authRoutes/loginUser', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({email, password}),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                if (data.token) {
+                    localStorage.setItem('authToken', data.token);
+                }
+
+                if (data.user) {
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                }
+
+                console.log("Login successful:", data);
+
+                navigate('/dashboard');
+            } else {
+                setError(data.message || 'Login failed. Please try again.');
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            setError('Network error. Please check your connection and try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
