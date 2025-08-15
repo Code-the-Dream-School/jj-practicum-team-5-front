@@ -1,5 +1,10 @@
+// src/pages/StepPage.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
+
+// UI
+import Badge from "../components/Badge";
+import ProgressBar from "../components/ProgressBar";
 
 // --- storage helpers ---
 const STORAGE_KEY = "steps_v1";
@@ -31,21 +36,27 @@ export function derive(step) {
   return { progress, status, total, done };
 }
 
-const pillCls = (status) =>
-  status === "Completed"
-    ? "border-green-500 text-green-600 bg-green-100"
-    : status === "In Progress"
-    ? "border-orange-500 text-orange-600 bg-orange-100"
-    : status === "Overdue"
-    ? "border-red-500 text-red-600 bg-red-100"
-    : "border-gray-400 text-gray-600 bg-white";
+// Доменные статусы -> варианты UI-компонентов
+const toVariant = (status) => {
+  switch (status) {
+    case "Completed":
+      return "success";
+    case "In Progress":
+      return "warning";
+    case "Overdue":
+      return "error";
+    case "Not Started":
+    default:
+      return "neutral";
+  }
+};
 
 // --- page ---
 export default function StepPage() {
   const { id } = useParams();
   const stepId = Number(id);
   const location = useLocation();
-  const stateStep = location.state?.step || null; // comes from <Link state={{step}} />
+  const stateStep = location.state?.step || null; // приходит из <Link state={{step}} />
 
   // Load all steps once
   const [steps, setSteps] = useState(() => loadSteps());
@@ -57,7 +68,7 @@ export default function StepPage() {
 
   const [step, setStep] = useState(initialStep);
 
-  // If step only came from state but not in storage — insert & persist it
+  // Если шаг пришёл только из state — вставим его в сторедж
   useEffect(() => {
     if (
       stateStep &&
@@ -76,6 +87,7 @@ export default function StepPage() {
   }, [stateStep, stepId]);
 
   const meta = useMemo(() => derive(step), [step]);
+  const variant = toVariant(meta.status);
 
   if (!step) {
     return (
@@ -143,18 +155,20 @@ export default function StepPage() {
           ← Back
         </Link>
         <h1 className="text-xl font-semibold">Step: {step.title}</h1>
-        <span
-          className={`ml-auto px-3 py-1 text-xs font-medium rounded-full border ${pillCls(
-            meta.status
-          )}`}
-        >
-          {meta.status}
-        </span>
+        <div className="ml-auto flex items-center gap-2">
+          <Badge status={variant}>{meta.status}</Badge>
+          <span className="text-xs text-gray-500 w-12 text-right">
+            {meta.progress}%
+          </span>
+        </div>
       </div>
 
       {/* Description */}
-      <label className="block text-sm text-gray-600 mb-1">Description</label>
+      <label htmlFor="step-desc" className="block text-sm text-gray-600 mb-1">
+        Description
+      </label>
       <textarea
+        id="step-desc"
         className="w-full p-3 border border-gray-300 rounded-lg text-sm"
         placeholder="Describe this step…"
         value={step.description || ""}
@@ -164,8 +178,11 @@ export default function StepPage() {
 
       {/* Due date */}
       <div className="mt-4">
-        <label className="block text-sm text-gray-600 mb-1">Due date</label>
+        <label htmlFor="due-date" className="block text-sm text-gray-600 mb-1">
+          Due date
+        </label>
         <input
+          id="due-date"
           type="date"
           value={step.dueDate ? step.dueDate.slice(0, 10) : ""}
           onChange={(e) => setDueDate(e.target.value)}
@@ -181,20 +198,7 @@ export default function StepPage() {
             {meta.done}/{meta.total} • {meta.progress}%
           </div>
         </div>
-        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-          <div
-            className={`h-2 transition-[width] ${
-              meta.status === "Completed"
-                ? "bg-green-500"
-                : meta.status === "In Progress"
-                ? "bg-orange-500"
-                : meta.status === "Overdue"
-                ? "bg-red-500"
-                : "bg-gray-400"
-            }`}
-            style={{ width: `${meta.progress}%` }}
-          />
-        </div>
+        <ProgressBar status={variant} value={meta.progress} />
       </div>
 
       {/* Subtasks */}

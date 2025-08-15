@@ -1,5 +1,10 @@
+// src/pages/ProjectPage.jsx
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+
+// UI
+import Badge from "../components/Badge";
+import ProgressBar from "../components/ProgressBar";
 
 // --- Local storage helpers ---
 const STORAGE_KEY = "steps_v1";
@@ -30,6 +35,21 @@ function derive(step) {
 
   return { progress, status, total, done };
 }
+
+// Map domain statuses -> UI variants used by Badge/ProgressBar
+const toVariant = (status) => {
+  switch (status) {
+    case "Completed":
+      return "success";
+    case "In Progress":
+      return "warning";
+    case "Overdue":
+      return "error";
+    case "Not Started":
+    default:
+      return "neutral";
+  }
+};
 
 export default function ProjectPage() {
   const [description, setDescription] = useState("");
@@ -99,25 +119,6 @@ export default function ProjectPage() {
     save(updated);
   };
 
-  // Badge and progress bar colors
-  const badge = (status) =>
-    status === "Completed"
-      ? "border-green-500 text-green-700 bg-green-100"
-      : status === "In Progress"
-      ? "border-orange-500 text-orange-700 bg-orange-100"
-      : status === "Overdue"
-      ? "border-red-500 text-red-700 bg-red-100"
-      : "border-gray-400 text-gray-600 bg-white";
-
-  const bar = (status) =>
-    status === "Completed"
-      ? "bg-green-500"
-      : status === "In Progress"
-      ? "bg-orange-500"
-      : status === "Overdue"
-      ? "bg-red-500"
-      : "bg-white border border-gray-400";
-
   return (
     <div className="max-w-2xl mx-auto p-4 bg-gray-50 border border-gray-200 rounded-xl shadow-sm">
       {/* Header */}
@@ -126,8 +127,14 @@ export default function ProjectPage() {
       </div>
 
       {/* Project description */}
-      <label className="block text-sm text-gray-500 mb-1">Description</label>
+      <label
+        htmlFor="project-desc"
+        className="block text-sm text-gray-500 mb-1"
+      >
+        Description
+      </label>
       <textarea
+        id="project-desc"
         className="w-full p-3 border border-gray-300 rounded-lg text-sm"
         placeholder="Project description…"
         value={description}
@@ -136,47 +143,41 @@ export default function ProjectPage() {
       />
 
       {/* Steps */}
-      <h2 className="mt-6 mb-3 text-lg font-semibold">Key Steps</h2>
-      <button
-        onClick={addStep}
-        className="border border-gray-300 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100"
-      >
-        + Add Step
-      </button>
+      <div className="mt-6 mb-3 flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Key Steps</h2>
+        <button
+          onClick={addStep}
+          className="border border-gray-300 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100"
+        >
+          + Add Step
+        </button>
+      </div>
 
-      <div className="mt-4 space-y-3">
+      <div className="mt-2 space-y-3">
         {steps.map((s) => {
           const meta = derive(s);
+          const variant = toVariant(meta.status);
+
           return (
             <Link
               to={`/step/${s.id}`}
               key={s.id}
               className="block p-3 border border-gray-200 rounded-xl bg-white hover:shadow-sm transition"
             >
-              <div className="text-sm font-medium">{s.title}</div>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1">
+                  <div className="text-sm font-medium">{s.title}</div>
 
-              {/* Progress bar + badge */}
-              <div className="mt-3 flex items-center gap-3">
-                {/* Progress bar */}
-                <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className={`h-2 transition-[width] ${bar(meta.status)} ${
-                      meta.progress > 0 ? "min-w-[4px]" : ""
-                    }`}
-                    style={{ width: `${meta.progress}%` }}
-                  />
+                  {/* Progress bar */}
+                  <div className="mt-3">
+                    <ProgressBar status={variant} value={meta.progress} />
+                  </div>
                 </div>
 
                 {/* Badge + percent */}
-                <div className="flex items-center gap-10">
-                  <span
-                    className={`px-7 py-3 text-sm font-medium rounded-full border shadow-sm ${badge(
-                      meta.status
-                    )}`}
-                  >
-                    {meta.status}
-                  </span>
-                  <span className="text-sm text-gray-600">
+                <div className="flex items-center gap-3 shrink-0 ml-2">
+                  <Badge status={variant}>{meta.status}</Badge>
+                  <span className="text-sm text-gray-600 w-10 text-right">
                     {meta.progress}%
                   </span>
                 </div>
