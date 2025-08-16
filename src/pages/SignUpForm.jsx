@@ -164,7 +164,7 @@ export default function SignUpForm() {
                                         ? 'border-red-300 bg-red-50'
                                         : 'border-gray-200 hover:border-gray-300 focus:border-blue-400'
                                 }`}
-                                placeholder="john.doe@example.com"
+                                placeholder="test@example.com"
                             />
                             {errors.email && (
                                 <p className="text-red-500 text-sm mt-1">{errors.email}</p>
