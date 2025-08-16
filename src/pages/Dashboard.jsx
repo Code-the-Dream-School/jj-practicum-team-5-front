@@ -1,7 +1,10 @@
 import { useState } from "react";
+import {useNavigate} from "react-router-dom";
 
 export default function ProjectsSliderPage() {
     const [currentSlide, setCurrentSlide] = useState(0);
+
+    const navigate = useNavigate();
 
     const projects = [
         {
@@ -11,8 +14,6 @@ export default function ProjectsSliderPage() {
             image: "/images/wedding.jpeg",
             date: "09/15/2025",
             status: "Completed",
-            budget: "$15,000",
-            participants: 150
         },
         {
             id: 2,
@@ -21,8 +22,6 @@ export default function ProjectsSliderPage() {
             image: "/images/gender.jpeg",
             date: "09/09/2025",
             status: "In Progress",
-            budget: "$3,000",
-            participants: 25
         },
         {
             id: 3,
@@ -31,8 +30,6 @@ export default function ProjectsSliderPage() {
             image: "/images/bd.jpeg",
             date: "11/10/2025",
             status: "Not started",
-            budget: "$5,000",
-            participants: 50
         },
         {
             id: 4,
@@ -41,8 +38,6 @@ export default function ProjectsSliderPage() {
             image: "/images/cruise.jpeg",
             date: "05/05/2026",
             status: "In Progress",
-            budget: "$20,000",
-            participants: 4
         },
         {
             id: 5,
@@ -51,8 +46,6 @@ export default function ProjectsSliderPage() {
             image: "/images/trip.jpeg",
             date: "08/01/2025",
             status: "Overdue",
-            budget: "$8,000",
-            participants: 6
         },
         {
             id: 6,
@@ -61,8 +54,6 @@ export default function ProjectsSliderPage() {
             image: "/images/shower.jpeg",
             date: "10/10/2025",
             status: "In Progress",
-            budget: "$2,500",
-            participants: 30
         }
     ];
 
@@ -98,7 +89,6 @@ export default function ProjectsSliderPage() {
     return (
         <div className="min-h-screen bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 py-12">
             <div className="max-w-7xl mx-auto px-4">
-                {/* Header */}
                 <div className="text-center mb-12">
                     <h1 className="text-4xl font-bold text-gray-800 mb-4">
                         Event Projects
@@ -106,14 +96,13 @@ export default function ProjectsSliderPage() {
                 </div>
 
 
-                <div className="relative">
-
+                <div className="relative px-16">
                     <div className="overflow-hidden rounded-2xl">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {visibleProjects.map((project) => (
                                 <div
                                     key={project.id}
-                                    className="bg-white rounded-2xl p-6 shadow-2xl border border-gray-100 transform transition-all duration-300 hover:scale-105 hover:shadow-3xl"
+                                    className="bg-white rounded-2xl p-6 shadow-2xl border border-gray-100 transform transition-all duration-300 hover:scale-105 hover:shadow-3xl flex flex-col h-full"
                                 >
                                     <div className="w-full h-48 rounded-xl mb-4 overflow-hidden">
                                         <img
@@ -143,7 +132,7 @@ export default function ProjectsSliderPage() {
                                         {project.title}
                                     </h3>
 
-                                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                                    <p className="text-gray-600 text-sm mb-4 line-clamp-2 flex-grow">
                                         {project.description}
                                     </p>
 
@@ -152,21 +141,14 @@ export default function ProjectsSliderPage() {
                                             <span className="text-gray-500">Date:</span>
                                             <span className="font-medium text-gray-700">{project.date}</span>
                                         </div>
-                                        <div className="flex justify-between text-sm">
-                                            <span className="text-gray-500">Budget:</span>
-                                            <span className="font-medium text-gray-700">{project.budget}</span>
-                                        </div>
-                                        <div className="flex justify-between text-sm">
-                                            <span className="text-gray-500">Participants:</span>
-                                            <span className="font-medium text-gray-700">{project.participants}</span>
-                                        </div>
                                     </div>
 
                                     <div className="flex space-x-2">
-                                        <button className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 px-4 rounded-xl font-medium text-sm hover:from-blue-700 hover:to-purple-700 transition-all duration-300 hover:scale-105">
+                                        <button type="button"
+                                                onClick={() => navigate(`/project/${project.id}`)} className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 px-4 rounded-xl font-medium text-sm hover:from-blue-700 hover:to-purple-700 transition-all duration-300 hover:scale-105">
                                             View Details
                                         </button>
-                                        <button className="px-4 py-2 border-2 border-gray-300 text-gray-600 rounded-xl font-medium text-sm hover:border-gray-400 hover:text-gray-700 transition-all duration-300">
+                                        <button onClick={() => navigate(`/project/${project.id}`)} className="px-4 py-2 border-2 border-gray-300 text-gray-600 rounded-xl font-medium text-sm hover:border-gray-400 hover:text-gray-700 transition-all duration-300">
                                             Edit
                                         </button>
                                     </div>
@@ -177,20 +159,20 @@ export default function ProjectsSliderPage() {
 
                     <button
                         onClick={prevSlide}
-                        className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+                        className="absolute left-6 top-1/2 transform -translate-y-1/2 bg-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 border border-gray-400"
                         disabled={projects.length <= 3}
                     >
-                        <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                         </svg>
                     </button>
 
                     <button
                         onClick={nextSlide}
-                        className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+                        className="absolute right-6 top-1/2 transform -translate-y-1/2 bg-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 border border-gray-400"
                         disabled={projects.length <= 3}
                     >
-                        <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
                     </button>
