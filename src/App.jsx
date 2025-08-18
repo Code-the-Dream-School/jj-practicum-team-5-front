@@ -12,16 +12,14 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route element={<MainLayout />}>
-          {/* индекс = "/" */}
-          <Route index element={<HomePage />} />
-
-          {/* остальные страницы */}
-          <Route path="login" element={<LoginPage />} />
-          <Route path="signup" element={<SignUpForm />} />
-          <Route path="project" element={<ProjectPage />} />
-          <Route path="step/:id" element={<StepPage />} />
-
-          {/* fallback */}
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignUpForm />} />
+          <Route path="/project" element={<ProjectPage />} />
+          <Route
+            path="/project/:projectId/step/:stepId"
+            element={<StepPage />}
+          />
           <Route path="*" element={<div>Not Found</div>} />
         </Route>
       </Routes>

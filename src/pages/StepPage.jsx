@@ -1,25 +1,22 @@
-// src/pages/StepPage.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 
-// UI
 import Badge from "../components/Badge";
 import ProgressBar from "../components/ProgressBar";
 
-// --- storage helpers ---
-const STORAGE_KEY = "steps_v1";
-const loadSteps = () => {
+/* Storage (projects_v1)  */
+const PROJECTS_KEY = "projects_v1";
+const loadProjects = () => {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    return JSON.parse(localStorage.getItem(PROJECTS_KEY) || "[]");
   } catch {
     return [];
   }
 };
-const saveSteps = (steps) =>
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(steps));
+const saveProjects = (projects) =>
+  localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
 
-// --- progress & status from subtasks ---
+/* Progress & status  */
 export function derive(step) {
   const total = step?.subtasks?.length || 0;
   const done = step?.subtasks?.filter((t) => t.done).length || 0;
@@ -36,7 +33,6 @@ export function derive(step) {
   return { progress, status, total, done };
 }
 
-// Доменные статусы -> варианты UI-компонентов
 const toVariant = (status) => {
   switch (status) {
     case "Completed":
@@ -51,107 +47,173 @@ const toVariant = (status) => {
   }
 };
 
-// --- page ---
+/*  Page  */
 export default function StepPage() {
-  const { id } = useParams();
-  const stepId = Number(id);
+  // expected route: /project/:projectId/step/:stepId
+  const { projectId, stepId } = useParams();
   const location = useLocation();
-  const stateStep = location.state?.step || null; // приходит из <Link state={{step}} />
+  const stateStep = location.state?.step || null; // optional fallback when navigating with state
 
-  // Load all steps once
-  const [steps, setSteps] = useState(() => loadSteps());
+  // keep all projects in state
+  const [projects, setProjects] = useState(() => loadProjects());
 
-  // Pick the step: prefer stored, else fallback to state
-  const initialStep =
-    steps.find((s) => s.id === stepId) ||
-    (stateStep && stateStep.id === stepId ? stateStep : null);
+  // find current project by id
+  const project = useMemo(
+    () => projects.find((p) => p.id === projectId) || null,
+    [projects, projectId]
+  );
 
-  const [step, setStep] = useState(initialStep);
+  // interpret stepId as number if numeric, otherwise keep as string
+  const normalizeId = (x) => {
+    const n = Number(x);
+    return Number.isFinite(n) && String(n) === String(x) ? n : String(x);
+  };
+  const sid = normalizeId(stepId);
 
-  // Если шаг пришёл только из state — вставим его в сторедж
+  // find step within the current project
+  const findStep = (proj) =>
+    proj?.steps?.find((s) => String(s.id) === String(sid)) || null;
+
+  const [step, setStep] = useState(() => findStep(project));
+
+  // if step came only from Link state, insert into project and persist
   useEffect(() => {
-    if (
-      stateStep &&
-      stateStep.id === stepId &&
-      !steps.find((s) => s.id === stepId)
-    ) {
-      const inserted = [
-        ...steps,
-        { ...stateStep, subtasks: stateStep.subtasks || [] },
-      ];
-      setSteps(inserted);
-      saveSteps(inserted);
+    if (!project) return;
+    if (!step && stateStep && String(stateStep.id) === String(sid)) {
+      const nextProject = {
+        ...project,
+        steps: [
+          ...(project.steps || []),
+          { ...stateStep, subtasks: stateStep.subtasks || [] },
+        ],
+      };
+      setProjects((prev) => {
+        const idx = prev.findIndex((p) => p.id === project.id);
+        const copy = [...prev];
+        if (idx === -1) copy.unshift(nextProject);
+        else copy[idx] = nextProject;
+        saveProjects(copy);
+        return copy;
+      });
       setStep(stateStep);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stateStep, stepId]);
+  }, [project, stateStep, sid]);
 
-  const meta = useMemo(() => derive(step), [step]);
+  // refresh local step if projects change
+  useEffect(() => {
+    setStep(findStep(project));
+  }, [project]);
+
+  const meta = useMemo(() => derive(step || {}), [step]);
   const variant = toVariant(meta.status);
+
+  // update project in array and persist
+  const upsertProject = (nextProject) => {
+    setProjects((prev) => {
+      const idx = prev.findIndex((p) => p.id === nextProject.id);
+      const copy = [...prev];
+      if (idx === -1) copy.unshift(nextProject);
+      else copy[idx] = nextProject;
+      saveProjects(copy);
+      return copy;
+    });
+  };
+
+  // update this step inside its project
+  const updateAndPersist = (updatedStep) => {
+    if (!project) return;
+    const nextSteps = (project.steps || []).some(
+      (s) => String(s.id) === String(updatedStep.id)
+    )
+      ? project.steps.map((s) =>
+          String(s.id) === String(updatedStep.id) ? updatedStep : s
+        )
+      : [...(project.steps || []), updatedStep];
+
+    const nextProject = { ...project, steps: nextSteps };
+    setStep(updatedStep);
+    upsertProject(nextProject);
+  };
+
+  const setDescription = (val) =>
+    updateAndPersist({ ...step, description: val });
+
+  const setDueDate = (val) =>
+    updateAndPersist({
+      ...step,
+      // store ISO string or null
+      dueDate: val ? new Date(val).toISOString() : null,
+    });
+
+  const toggleSubtask = (tid) => {
+    const subtasks = (step?.subtasks || []).map((t) =>
+      String(t.id) === String(tid) ? { ...t, done: !t.done } : t
+    );
+    updateAndPersist({ ...step, subtasks });
+  };
+
+  const editSubtaskTitle = (tid, title) => {
+    const subtasks = (step?.subtasks || []).map((t) =>
+      String(t.id) === String(tid) ? { ...t, title } : t
+    );
+    updateAndPersist({ ...step, subtasks });
+  };
+
+  const addSubtask = () => {
+    const list = step?.subtasks || [];
+    // support numeric IDs if existing, otherwise fallback to string
+    const nextNumeric =
+      list.length && list.every((t) => Number.isFinite(Number(t.id)))
+        ? Math.max(...list.map((t) => Number(t.id))) + 1
+        : null;
+    const newId =
+      nextNumeric ?? `${Date.now()}-${(list.length + 1).toString(36)}`;
+
+    updateAndPersist({
+      ...step,
+      subtasks: [...list, { id: newId, title: `New item`, done: false }],
+    });
+  };
+
+  const removeSubtask = (tid) =>
+    updateAndPersist({
+      ...step,
+      subtasks: (step?.subtasks || []).filter(
+        (t) => String(t.id) !== String(tid)
+      ),
+    });
+
+  /*  Guards  */
+  if (!project) {
+    return (
+      <div className="max-w-xl mx-auto p-4">
+        <p className="mb-3">Project not found.</p>
+        <Link to="/project" className="text-blue-600 underline">
+          ← Back to Projects
+        </Link>
+      </div>
+    );
+  }
 
   if (!step) {
     return (
       <div className="max-w-xl mx-auto p-4">
-        <p className="mb-3">Step #{id} not found.</p>
-        <Link to="/" className="text-blue-600 underline">
+        <p className="mb-3">Step not found.</p>
+        <Link to={`/project/${project.id}`} className="text-blue-600 underline">
           ← Back to Project
         </Link>
       </div>
     );
   }
 
-  // -- mutations with persist --
-  const updateAndPersist = (updated) => {
-    setStep(updated);
-    const updatedSteps = steps.some((s) => s.id === updated.id)
-      ? steps.map((s) => (s.id === updated.id ? updated : s))
-      : [...steps, updated];
-    setSteps(updatedSteps);
-    saveSteps(updatedSteps);
-  };
-
-  const setDescription = (val) =>
-    updateAndPersist({ ...step, description: val });
-  const setDueDate = (val) =>
-    updateAndPersist({
-      ...step,
-      dueDate: val ? new Date(val).toISOString() : null,
-    });
-
-  const toggleSubtask = (tid) => {
-    const subtasks = (step.subtasks || []).map((t) =>
-      t.id === tid ? { ...t, done: !t.done } : t
-    );
-    updateAndPersist({ ...step, subtasks });
-  };
-  const editSubtaskTitle = (tid, title) => {
-    const subtasks = (step.subtasks || []).map((t) =>
-      t.id === tid ? { ...t, title } : t
-    );
-    updateAndPersist({ ...step, subtasks });
-  };
-  const addSubtask = () => {
-    const list = step.subtasks || [];
-    const nextId = list.length ? Math.max(...list.map((t) => t.id)) + 1 : 1;
-    updateAndPersist({
-      ...step,
-      subtasks: [
-        ...list,
-        { id: nextId, title: `New item ${nextId}`, done: false },
-      ],
-    });
-  };
-  const removeSubtask = (tid) =>
-    updateAndPersist({
-      ...step,
-      subtasks: (step.subtasks || []).filter((t) => t.id !== tid),
-    });
-
   return (
     <div className="max-w-xl mx-auto p-4 bg-gray-50 border border-gray-200 rounded-xl shadow-sm">
       {/* Header */}
       <div className="flex items-center gap-2 border-b border-gray-200 pb-3 mb-4">
-        <Link to="/" className="text-sm px-2 py-1 rounded hover:bg-gray-100">
+        <Link
+          to={`/project/${project.id}`}
+          className="text-sm px-2 py-1 rounded hover:bg-gray-100"
+        >
           ← Back
         </Link>
         <h1 className="text-xl font-semibold">Step: {step.title}</h1>
@@ -184,7 +246,11 @@ export default function StepPage() {
         <input
           id="due-date"
           type="date"
-          value={step.dueDate ? step.dueDate.slice(0, 10) : ""}
+          value={
+            step.dueDate
+              ? new Date(step.dueDate).toISOString().slice(0, 10)
+              : ""
+          }
           onChange={(e) => setDueDate(e.target.value)}
           className="border border-gray-300 rounded px-2 py-1 text-sm"
         />
