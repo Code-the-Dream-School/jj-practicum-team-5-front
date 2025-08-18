@@ -1,65 +1,34 @@
-// src/pages/StepPage.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 
-// UI
 import Badge from "../components/Badge";
 import ProgressBar from "../components/ProgressBar";
+import DueBanner from "../components/DueBanner";
 
-// --- storage helpers ---
-const STORAGE_KEY = "steps_v1";
-const loadSteps = () => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-};
-const saveSteps = (steps) =>
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(steps));
+import { toDateOnly, getDueInfo } from "../utils/due";
+import { derive, toVariant } from "../utils/derive";
+import { createJSONStore } from "../utils/storage";
 
-// --- progress & status from subtasks ---
-export function derive(step) {
-  const total = step?.subtasks?.length || 0;
-  const done = step?.subtasks?.filter((t) => t.done).length || 0;
-  const progress = total ? Math.round((done / total) * 100) : 0;
+// --- storage (steps) ---
+const stepsStore = createJSONStore("steps_v1", [], {
+  migrate: (arr) =>
+    (arr || []).map((s) => ({ ...s, dueDate: toDateOnly(s.dueDate) })),
+});
 
-  let status = "Not Started";
-  const overdue =
-    step?.dueDate && new Date(step.dueDate) < new Date() && done < total;
-  if (overdue) status = "Overdue";
-  else if (done === 0) status = "Not Started";
-  else if (done === total) status = "Completed";
-  else status = "In Progress";
-
-  return { progress, status, total, done };
-}
-
-// Доменные статусы -> варианты UI-компонентов
-const toVariant = (status) => {
-  switch (status) {
-    case "Completed":
-      return "success";
-    case "In Progress":
-      return "warning";
-    case "Overdue":
-      return "error";
-    case "Not Started":
-    default:
-      return "neutral";
-  }
-};
-
-// --- page ---
 export default function StepPage() {
   const { id } = useParams();
   const stepId = Number(id);
   const location = useLocation();
-  const stateStep = location.state?.step || null; // приходит из <Link state={{step}} />
+
+  const stateStep = location.state?.step
+    ? {
+        ...location.state.step,
+        dueDate: toDateOnly(location.state.step.dueDate),
+      }
+    : null;
 
   // Load all steps once
-  const [steps, setSteps] = useState(() => loadSteps());
+  const [steps, setSteps] = useState(() => stepsStore.load());
 
   // Pick the step: prefer stored, else fallback to state
   const initialStep =
@@ -68,7 +37,7 @@ export default function StepPage() {
 
   const [step, setStep] = useState(initialStep);
 
-  // Если шаг пришёл только из state — вставим его в сторедж
+  // If the step only came from state — persist it to storage
   useEffect(() => {
     if (
       stateStep &&
@@ -80,14 +49,11 @@ export default function StepPage() {
         { ...stateStep, subtasks: stateStep.subtasks || [] },
       ];
       setSteps(inserted);
-      saveSteps(inserted);
+      stepsStore.save(inserted);
       setStep(stateStep);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stateStep, stepId]);
-
-  const meta = useMemo(() => derive(step), [step]);
-  const variant = toVariant(meta.status);
 
   if (!step) {
     return (
@@ -100,6 +66,10 @@ export default function StepPage() {
     );
   }
 
+  const meta = useMemo(() => derive(step), [step]);
+  const variant = toVariant(meta.status);
+  const stepDueInfo = getDueInfo(step?.dueDate, meta.progress === 100);
+
   // -- mutations with persist --
   const updateAndPersist = (updated) => {
     setStep(updated);
@@ -107,16 +77,15 @@ export default function StepPage() {
       ? steps.map((s) => (s.id === updated.id ? updated : s))
       : [...steps, updated];
     setSteps(updatedSteps);
-    saveSteps(updatedSteps);
+    stepsStore.save(updatedSteps);
   };
 
   const setDescription = (val) =>
     updateAndPersist({ ...step, description: val });
+
+  // Store date-only string 'YYYY-MM-DD' (no toISOString to avoid timezone shifts)
   const setDueDate = (val) =>
-    updateAndPersist({
-      ...step,
-      dueDate: val ? new Date(val).toISOString() : null,
-    });
+    updateAndPersist({ ...step, dueDate: val || null });
 
   const toggleSubtask = (tid) => {
     const subtasks = (step.subtasks || []).map((t) =>
@@ -124,12 +93,14 @@ export default function StepPage() {
     );
     updateAndPersist({ ...step, subtasks });
   };
+
   const editSubtaskTitle = (tid, title) => {
     const subtasks = (step.subtasks || []).map((t) =>
       t.id === tid ? { ...t, title } : t
     );
     updateAndPersist({ ...step, subtasks });
   };
+
   const addSubtask = () => {
     const list = step.subtasks || [];
     const nextId = list.length ? Math.max(...list.map((t) => t.id)) + 1 : 1;
@@ -141,6 +112,7 @@ export default function StepPage() {
       ],
     });
   };
+
   const removeSubtask = (tid) =>
     updateAndPersist({
       ...step,
@@ -163,6 +135,12 @@ export default function StepPage() {
         </div>
       </div>
 
+      {/* <24h warning */}
+      <DueBanner
+        dueInfo={stepDueInfo}
+        text="less than 24 hours to the deadline"
+      />
+
       {/* Description */}
       <label htmlFor="step-desc" className="block text-sm text-gray-600 mb-1">
         Description
@@ -184,7 +162,7 @@ export default function StepPage() {
         <input
           id="due-date"
           type="date"
-          value={step.dueDate ? step.dueDate.slice(0, 10) : ""}
+          value={step.dueDate || ""}
           onChange={(e) => setDueDate(e.target.value)}
           className="border border-gray-300 rounded px-2 py-1 text-sm"
         />
