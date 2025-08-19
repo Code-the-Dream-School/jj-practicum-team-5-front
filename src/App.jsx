@@ -3,9 +3,11 @@ import MainLayout from "./layouts/MainLayout.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import SignUpForm from "./pages/SignUpForm.jsx";
-import ProjectPage from "./pages/ProjectPage.jsx";
 import StepPage from "./pages/StepPage.jsx";
 import "./index.css";
+import Dashboard from "./pages/Dashboard.jsx";
+import ProjectPage from "./pages/ProjectPage.jsx";
+import ProjectFormPage from "./pages/ProjectFormPage.jsx";
 
 export default function App() {
   return (
@@ -14,13 +16,14 @@ export default function App() {
         <Route element={<MainLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
+            <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/signup" element={<SignUpForm />} />
           <Route path="/project" element={<ProjectPage />} />
+            <Route path="/project/new" element={<ProjectFormPage />} />
           <Route
             path="/project/:projectId/step/:stepId"
             element={<StepPage />}
           />
-          <Route path="*" element={<div>Not Found</div>} />
         </Route>
       </Routes>
     </BrowserRouter>
