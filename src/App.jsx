@@ -15,11 +15,18 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUpForm />} />
+
+          {/* Project list/default project */}
           <Route path="/project" element={<ProjectPage />} />
+          {/* Specific project by ID (нужно для Back-ссылок и прямых ссылок) */}
+          <Route path="/project/:projectId" element={<ProjectPage />} />
+
+          {/* Step inside specific project */}
           <Route
             path="/project/:projectId/step/:stepId"
             element={<StepPage />}
           />
+
           <Route path="*" element={<div>Not Found</div>} />
         </Route>
       </Routes>
