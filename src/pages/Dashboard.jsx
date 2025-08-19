@@ -1,5 +1,7 @@
 import { useState } from "react";
 import {useNavigate} from "react-router-dom";
+import Timeline from "../components/TimeLine.jsx";
+
 
 export default function ProjectsSliderPage() {
     const [currentSlide, setCurrentSlide] = useState(0);
@@ -14,6 +16,20 @@ export default function ProjectsSliderPage() {
             image: "/images/wedding.jpeg",
             date: "09/15/2025",
             status: "Completed",
+            steps: [
+        {
+            name: "Planning",
+            status: "completed",
+        },
+        {
+            name: "Preparations",
+            status: "completed",
+        },
+        {
+            name: "Event Day",
+            status: "completed",
+        }
+            ]
         },
         {
             id: 2,
@@ -22,6 +38,20 @@ export default function ProjectsSliderPage() {
             image: "/images/gender.jpeg",
             date: "09/09/2025",
             status: "In Progress",
+            steps: [
+        {
+            name: "Planning",
+            status: "completed",
+        },
+        {
+            name: "Setup",
+            status: "in-progress",
+        },
+        {
+            name: "Event",
+            status: "not started",
+        }
+            ]
         },
         {
             id: 3,
@@ -30,6 +60,20 @@ export default function ProjectsSliderPage() {
             image: "/images/bd.jpeg",
             date: "11/10/2025",
             status: "Not started",
+            steps: [
+                {
+                    name: "Planning",
+                    status: "not started",
+                },
+                {
+                    name: "Preparations",
+                    status: "not started",
+                },
+                {
+                    name: "Party Day",
+                    status: "not started",
+                }
+            ]
         },
         {
             id: 4,
@@ -38,6 +82,20 @@ export default function ProjectsSliderPage() {
             image: "/images/cruise.jpeg",
             date: "05/05/2026",
             status: "In Progress",
+            steps: [
+                {
+                    name: "Booking",
+                    status: "completed",
+                },
+                {
+                    name: "Preparation",
+                    status: "in-progress",
+                },
+                {
+                    name: "Cruise",
+                    status: "not started",
+                }
+            ]
         },
         {
             id: 5,
@@ -46,6 +104,20 @@ export default function ProjectsSliderPage() {
             image: "/images/trip.jpeg",
             date: "08/01/2025",
             status: "Overdue",
+            steps: [
+                {
+                    name: "Booking",
+                    status: "completed",
+                },
+                {
+                    name: "Preparation",
+                    status: "in-progress",
+                },
+                {
+                    name: "Cruise",
+                    status: "not started",
+                }
+            ]
         },
         {
             id: 6,
@@ -54,6 +126,20 @@ export default function ProjectsSliderPage() {
             image: "/images/shower.jpeg",
             date: "10/10/2025",
             status: "In Progress",
+            steps: [
+                {
+                    name: "Planning",
+                    status: "completed",
+                },
+                {
+                    name: "Setup",
+                    status: "in-progress",
+                },
+                {
+                    name: "Shower",
+                    status: "not started",
+                }
+            ]
         }
     ];
 
@@ -95,7 +181,7 @@ export default function ProjectsSliderPage() {
                     </h1>
                     <button
                         onClick={() => navigate('/project/new')}
-                        className="absolute top-0 right-0 bg-gradient-to-r from-green-600 to-blue-600 text-white py-3 px-6 rounded-xl font-medium text-sm hover:from-green-700 hover:to-blue-700 transition-all duration-300 hover:scale-105 shadow-lg flex items-center space-x-2"
+                        className="absolute top-0 right-16 bg-gradient-to-r from-green-600 to-blue-600 text-white py-3 px-6 rounded-xl font-medium text-sm hover:from-green-700 hover:to-blue-700 transition-all duration-300 hover:scale-105 shadow-lg flex items-center space-x-2"
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -151,7 +237,9 @@ export default function ProjectsSliderPage() {
                                             <span className="font-medium text-gray-700">{project.date}</span>
                                         </div>
                                     </div>
-
+                                    <div className="mb-4 border-t pt-3">
+                                        <Timeline steps={project.steps} />
+                                    </div>
                                     <div className="flex space-x-2">
                                         <button type="button"
                                                 onClick={() => navigate(`/project/${project.id}`)} className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 px-4 rounded-xl font-medium text-sm hover:from-blue-700 hover:to-purple-700 transition-all duration-300 hover:scale-105">
