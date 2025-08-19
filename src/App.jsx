@@ -6,7 +6,8 @@ import SignUpForm from "./pages/SignUpForm.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import ProjectPage from "./pages/ProjectPage.jsx";
 import StepPage from "./pages/StepPage";
-import ProjectFormPage from "./pages/ProjectFormPage.jsx"
+import ProjectFormPage from "./pages/ProjectFormPage.jsx";
+import StepPage from "./pages/StepPage.jsx";
 import './index.css';
 
 export default function App() {
@@ -19,8 +20,12 @@ export default function App() {
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/signup" element={<SignUpForm />} />
                     <Route path="/project/:id" element={<ProjectPage />} />
-                    <Route path="/step/:id" element={<StepPage />} />
+                    <Route
+            path="/project/:projectId/step/:stepId"
+            element={<StepPage />}
+          />
                     <Route path="/project/new" element={<ProjectFormPage />} />
+                      <Route path="*" element={<div>Not Found</div>} />
                 </Route>
             </Routes>
         </BrowserRouter>
