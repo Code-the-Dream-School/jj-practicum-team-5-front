@@ -1,4 +1,4 @@
 node_modules/
 .DS_STORE
 .gitignore
-node_modules/
+.idea
