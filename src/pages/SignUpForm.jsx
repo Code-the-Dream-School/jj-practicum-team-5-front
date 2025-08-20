@@ -27,7 +27,21 @@ export default function SignUpForm() {
             setErrors(prev => ({ ...prev, [name]: '' }));
         }
     };
+    function validateEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
 
+    function validatePassword(password) {
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{10,}$/;
+
+        return {
+            isValid: passwordRegex.test(password),
+            message: passwordRegex.test(password)
+                ? ""
+                : "Password must be at least 10 characters, include uppercase, lowercase, number, and special character"
+        };
+    }
     const validateForm = () => {
         const newErrors = {};
 
@@ -41,14 +55,17 @@ export default function SignUpForm() {
 
         if (!formData.email.trim()) {
             newErrors.email = 'Email is required';
-        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            newErrors.email = 'Email is invalid';
+        } else if (!validateEmail(formData.email)) {
+            newErrors.email = "enter a valid email";
         }
 
         if (!formData.password) {
             newErrors.password = 'Password is required';
-        } else if (formData.password.length < 8) {
-            newErrors.password = 'Password must be at least 8 characters';
+        } {
+            const passwordValidation = validatePassword(formData.password);
+            if (!passwordValidation.isValid) {
+                newErrors.password = passwordValidation.message;
+            }
         }
 
         if (!formData.confirmPassword) {
@@ -76,15 +93,6 @@ export default function SignUpForm() {
             await new Promise(resolve => setTimeout(resolve, 2000));
 
             alert('Registration successful!');
-
-            setFormData({
-                firstName: '',
-                lastName: '',
-                email: '',
-                password: '',
-                confirmPassword: '',
-                agreeToTerms: false
-            });
 
         } catch (error) {
             alert('Registration failed. Please try again.');
@@ -164,7 +172,7 @@ export default function SignUpForm() {
                                         ? 'border-red-300 bg-red-50'
                                         : 'border-gray-200 hover:border-gray-300 focus:border-blue-400'
                                 }`}
-                                placeholder="john.doe@example.com"
+                                placeholder="test@example.com"
                             />
                             {errors.email && (
                                 <p className="text-red-500 text-sm mt-1">{errors.email}</p>

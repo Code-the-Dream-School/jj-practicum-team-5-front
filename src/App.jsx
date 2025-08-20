@@ -3,9 +3,11 @@ import MainLayout from "./layouts/MainLayout.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import SignUpForm from "./pages/SignUpForm.jsx";
+import Dashboard from "./pages/Dashboard.jsx";
 import ProjectPage from "./pages/ProjectPage.jsx";
-import StepPage from "./pages/StepPage.jsx";
-import "./index.css";
+import StepPage from "./pages/StepPage";
+import ProjectFormPage from "./pages/ProjectFormPage.jsx";
+import './index.css';
 
 export default function App() {
   return (
@@ -18,7 +20,7 @@ export default function App() {
 
           {/* Project list/default project */}
           <Route path="/project" element={<ProjectPage />} />
-          {/* Specific project by ID (нужно для Back-ссылок и прямых ссылок) */}
+          {/* Specific project by ID  */}
           <Route path="/project/:projectId" element={<ProjectPage />} />
 
           {/* Step inside specific project */}
