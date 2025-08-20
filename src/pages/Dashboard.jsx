@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {useNavigate} from "react-router-dom";
 import Timeline from "../components/TimeLine.jsx";
 import EditProject from "../components/EditProject.jsx";
@@ -9,7 +9,9 @@ export default function ProjectsSliderPage() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedProject, setSelectedProject] = useState(null);
 
-    const [projects, setProjects] = useState( [
+    const [projects, setProjects] = useState(() => {
+        const saved = localStorage.getItem("projects");
+        return saved ? JSON.parse(saved) : [
         {
             id: 1,
             title: "Wedding Celebration",
@@ -142,9 +144,13 @@ export default function ProjectsSliderPage() {
                 }
             ]
         }
-    ]);
+        ]
+    });
 
     const navigate = useNavigate();
+        useEffect(() => {
+            localStorage.setItem("projects", JSON.stringify(projects));
+        }, [projects]);
 
     const openEditModal = (project) => {
         setSelectedProject(project);
