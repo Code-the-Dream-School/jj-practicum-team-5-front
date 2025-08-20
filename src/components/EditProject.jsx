@@ -106,7 +106,7 @@ const EditProject = ({ project, isOpen, onClose, onSave }) => {
                             name="title"
                             value={formData.title}
                             onChange={handleInputChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                     </div>
 
@@ -119,7 +119,7 @@ const EditProject = ({ project, isOpen, onClose, onSave }) => {
                             value={formData.description}
                             onChange={handleInputChange}
                             rows={3}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                            className="w-full px-3 py-2 border border-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                         />
                     </div>
 
@@ -143,19 +143,29 @@ const EditProject = ({ project, isOpen, onClose, onSave }) => {
                             Project image
                         </label>
                         {imagePreview && (
-                            <div className="mb-4 relative">
+                            <div className="relative inline-block">
                                 <img
                                     src={imagePreview}
                                     alt="Preview"
-                                    className="w-full h-48 object-cover rounded-lg border border-gray-300"
+                                    className="w-32 h-32 object-cover rounded-lg border"
                                 />
                                 <button
                                     type="button"
-                                    onClick={handleRemoveImage}
-                                    className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
+                                    onClick={() => {
+                                        setImagePreview(null);
+                                        setFormData(prev => ({ ...prev, image: null, imageFile: null }));
+                                    }}
+                                    className="absolute -top-2 -right-2 bg-black w-8 h-8 flex items-center justify-center rounded-full border-2 border-white shadow-lg hover:bg-gray-800 hover:scale-110 transition"
                                 >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="w-4 h-4 text-white"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        strokeWidth={3}
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                 </button>
                             </div>
