@@ -24,15 +24,15 @@ const EditProject = ({ project, isOpen, onClose, onSave }) => {
         if (file) {
             const reader = new FileReader();
             reader.onload = (e) => {
-                setImagePreview(e.target.result);
+                const base64 = e.target.result;
+                setImagePreview(base64);
+                setFormData(prev => ({
+                    ...prev,
+                    imageFile: file,
+                    image: base64
+                }));
             };
             reader.readAsDataURL(file);
-
-            setFormData(prev => ({
-                ...prev,
-                imageFile: file,
-                image: URL.createObjectURL(file)
-            }));
         }
     };
 
@@ -170,21 +170,10 @@ const EditProject = ({ project, isOpen, onClose, onSave }) => {
                                     onChange={handleImageChange}
                                     className="hidden"
                                 />
-                                <div className="w-full px-4 py-2 border border-gray-300 rounded-lg text-center text-gray-600 hover:bg-gray-50 transition-colors">
+                                <div className="w-full px-4 py-2  py-2 px-4 rounded-xl border bg-gradient-to-r from-blue-600 to-purple-600  text-center text-white hover:bg-gray-50 transition-colors">
                                     Choose file
                                 </div>
                             </label>
-
-                            <span className="text-sm text-gray-500">OR</span>
-
-                            <input
-                                type="url"
-                                placeholder="Paste image URL"
-                                name="image"
-                                value={formData.image}
-                                onChange={handleInputChange}
-                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
                         </div>
 
                         <p className="text-xs text-gray-500 mt-2">

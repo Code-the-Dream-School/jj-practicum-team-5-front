@@ -147,6 +147,10 @@ export default function ProjectsSliderPage() {
         ]
     });
 
+    useEffect(() => {
+        localStorage.setItem("projects", JSON.stringify(projects));
+    }, [projects]);
+
     const navigate = useNavigate();
         useEffect(() => {
             localStorage.setItem("projects", JSON.stringify(projects));
