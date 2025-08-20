@@ -18,13 +18,11 @@ export default function App() {
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/signup" element={<SignUpForm />} />
-                    <Route path="/project/:id" element={<ProjectPage />} />
-                    <Route
-            path="/project/:projectId/step/:stepId"
-            element={<StepPage />}
-          />
                     <Route path="/project/new" element={<ProjectFormPage />} />
-                      <Route path="*" element={<div>Not Found</div>} />
+                    <Route path="/project/:projectId/step/:stepId" element={<StepPage />} />
+                    <Route path="/project/:id" element={<ProjectPage />} />
+
+                    <Route path="*" element={<div>Not Found</div>} />
                 </Route>
             </Routes>
         </BrowserRouter>
