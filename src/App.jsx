@@ -7,7 +7,6 @@ import Dashboard from "./pages/Dashboard.jsx";
 import ProjectPage from "./pages/ProjectPage.jsx";
 import StepPage from "./pages/StepPage";
 import ProjectFormPage from "./pages/ProjectFormPage.jsx";
-import StepPage from "./pages/StepPage.jsx";
 import './index.css';
 
 export default function App() {
