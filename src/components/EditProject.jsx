@@ -129,11 +129,17 @@ const EditProject = ({ project, isOpen, onClose, onSave }) => {
                                 Data
                             </label>
                             <input
-                                type="text"
+                                id="due-date"
+                                type="date"
                                 name="date"
-                                value={formData.date}
-                                onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                value={formData.date ? new Date(formData.date).toISOString().slice(0, 10) : ""}
+                                onChange={(e) =>
+                                    setFormData((prev) => ({
+                                        ...prev,
+                                        date: e.target.value ? new Date(e.target.value).toISOString() : ""
+                                    }))
+                                }
+                                className="border border-gray-300 rounded px-2 py-1 text-sm"
                             />
                         </div>
                     </div>
