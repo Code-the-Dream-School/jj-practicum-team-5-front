@@ -7,7 +7,8 @@ import Dashboard from "./pages/Dashboard.jsx";
 import ProjectPage from "./pages/ProjectPage.jsx";
 import StepPage from "./pages/StepPage";
 import ProjectFormPage from "./pages/ProjectFormPage.jsx";
-import './index.css';
+
+import "./index.css";
 
 export default function App() {
   return (
@@ -17,7 +18,8 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUpForm />} />
-
+          <Route path="/project/new" element={<ProjectFormPage />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           {/* Project list/default project */}
           <Route path="/project" element={<ProjectPage />} />
           {/* Specific project by ID  */}
