@@ -1,14 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {useNavigate} from "react-router-dom";
 import Timeline from "../components/TimeLine.jsx";
+import EditProject from "../components/EditProject.jsx";
 
 
 export default function ProjectsSliderPage() {
     const [currentSlide, setCurrentSlide] = useState(0);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [selectedProject, setSelectedProject] = useState(null);
 
-    const navigate = useNavigate();
-
-    const projects = [
+    const [projects, setProjects] = useState(() => {
+        const saved = localStorage.getItem("projects");
+        return saved ? JSON.parse(saved) : [
         {
             id: 1,
             title: "Wedding Celebration",
@@ -141,7 +144,56 @@ export default function ProjectsSliderPage() {
                 }
             ]
         }
-    ];
+        ]
+    });
+
+    useEffect(() => {
+        localStorage.setItem("projects", JSON.stringify(projects));
+    }, [projects]);
+
+    const navigate = useNavigate();
+        useEffect(() => {
+            localStorage.setItem("projects", JSON.stringify(projects));
+        }, [projects]);
+
+    const openEditModal = (project) => {
+        setSelectedProject(project);
+        setIsEditModalOpen(true);
+    };
+
+    const closeEditModal = () => {
+        setIsEditModalOpen(false);
+        setSelectedProject(null);
+    };
+
+    const handleSaveProject = (updatedProject) => {
+        if (updatedProject.formData) {
+            console.log('Sending form data with file:', updatedProject.formData);
+
+            const projectData = {
+                id: updatedProject.id,
+                title: updatedProject.title,
+                description: updatedProject.description,
+                date: updatedProject.date,
+                image: updatedProject.image,
+                status: updatedProject.status,
+                steps: updatedProject.steps
+            };
+
+            setProjects(prevProjects =>
+                prevProjects.map(project =>
+                    project.id === updatedProject.id ? projectData : project
+                )
+            );
+        } else {
+            setProjects(prevProjects =>
+                prevProjects.map(project =>
+                    project.id === updatedProject.id ? updatedProject : project
+                )
+            );
+        }
+        closeEditModal();
+    };
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -171,6 +223,7 @@ export default function ProjectsSliderPage() {
     };
 
     const visibleProjects = projects.slice(currentSlide * 3, currentSlide * 3 + 3);
+
 
     return (
         <div className="min-h-screen bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 py-12">
@@ -245,12 +298,18 @@ export default function ProjectsSliderPage() {
                                                 onClick={() => navigate(`/project/${project.id}`)} className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 px-4 rounded-xl font-medium text-sm hover:from-blue-700 hover:to-purple-700 transition-all duration-300 hover:scale-105">
                                             View Details
                                         </button>
-                                        <button onClick={() => navigate(`/project/${project.id}`)} className="px-4 py-2 border-2 border-gray-300 text-gray-600 rounded-xl font-medium text-sm hover:border-gray-400 hover:text-gray-700 transition-all duration-300">
+                                        <button onClick={() => openEditModal(project)} className="px-4 py-2 border-2 border-gray-300 text-gray-600 rounded-xl font-medium text-sm hover:border-gray-400 hover:text-gray-700 transition-all duration-300">
                                             Edit
                                         </button>
                                     </div>
                                 </div>
                             ))}
+                            <EditProject
+                                project={selectedProject}
+                                isOpen={isEditModalOpen}
+                                onClose={closeEditModal}
+                                onSave={handleSaveProject}
+                            />
                         </div>
                     </div>
 

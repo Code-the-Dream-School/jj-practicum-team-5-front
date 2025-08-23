@@ -10,28 +10,21 @@ import ProjectFormPage from "./pages/ProjectFormPage.jsx";
 import './index.css';
 
 export default function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route element={<MainLayout />}>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignUpForm />} />
+    return (
+        <BrowserRouter>
+            <Routes>
+                <Route element={<MainLayout />}>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/signup" element={<SignUpForm />} />
+                    <Route path="/project/new" element={<ProjectFormPage />} />
+                    <Route path="/project/:projectId/step/:stepId" element={<StepPage />} />
+                    <Route path="/project/:id" element={<ProjectPage />} />
 
-          {/* Project list/default project */}
-          <Route path="/project" element={<ProjectPage />} />
-          {/* Specific project by ID  */}
-          <Route path="/project/:projectId" element={<ProjectPage />} />
-
-          {/* Step inside specific project */}
-          <Route
-            path="/project/:projectId/step/:stepId"
-            element={<StepPage />}
-          />
-
-          <Route path="*" element={<div>Not Found</div>} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
-  );
+                    <Route path="*" element={<div>Not Found</div>} />
+                </Route>
+            </Routes>
+        </BrowserRouter>
+    );
 }
