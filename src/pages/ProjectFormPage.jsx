@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { projectsStore } from "../utils/projectsStore";
 
@@ -17,7 +17,11 @@ export default function ProjectFormPage() {
   // optional
   const [description, setDescription] = useState("");
   const [steps, setSteps] = useState([{ id: 1, title: "" }]);
+
+  // image state
   const [imageDataUrl, setImageDataUrl] = useState(null);
+  const [fileName, setFileName] = useState(""); // for custom label
+  const fileInputRef = useRef(null); // to reset native input
 
   const canSubmit = useMemo(() => title.trim() && dueDate, [title, dueDate]);
 
@@ -30,12 +34,35 @@ export default function ProjectFormPage() {
   const onChangeStep = (id, value) =>
     setSteps(steps.map((s) => (s.id === id ? { ...s, title: value } : s)));
 
+  // Custom file picker handler: hide native input, show our UI
   const onPickImage = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Optional sanity check for size (e.g., 3MB)
+    const MAX_MB = 3;
+    if (file.size > MAX_MB * 1024 * 1024) {
+      alert(`Image is too large (> ${MAX_MB}MB).`);
+      // Reset the input
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
+    setFileName(file.name);
+
+    // Keep data URL in memory
     const reader = new FileReader();
     reader.onload = () => setImageDataUrl(String(reader.result));
     reader.readAsDataURL(file);
+  };
+
+  // Allow clearing the chosen image entirely
+  const onRemoveImage = () => {
+    setImageDataUrl(null);
+    setFileName("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""; // clear native input state
+    }
   };
 
   const onSubmit = (e) => {
@@ -165,18 +192,48 @@ export default function ProjectFormPage() {
           </div>
         </div>
 
-        {/* Image (optional) */}
+        {/* Image (optional) - custom picker that hides the native input and shows a custom label instead of "No file chosen" */}
         <div>
-          <label htmlFor="p-image" className="block text-sm text-gray-600 mb-1">
+          <label className="block text-sm text-gray-600 mb-1">
             Project image (optional)
           </label>
+
+          {/* Hidden native input */}
           <input
             id="p-image"
             type="file"
             accept="image/*"
             onChange={onPickImage}
-            className="text-sm"
+            ref={fileInputRef}
+            className="hidden"
           />
+
+          {/* Custom button to open the file dialog */}
+          <label
+            htmlFor="p-image"
+            className="inline-block px-3 py-2 text-sm border border-gray-300 rounded cursor-pointer hover:bg-gray-100"
+          >
+            Upload image
+          </label>
+
+          {/* File name text (instead of the native 'No file chosen') */}
+          {fileName && (
+            <span className="ml-2 align-middle text-xs text-gray-500">
+              Selected: {fileName}
+            </span>
+          )}
+
+          {/* Allow removing the selected image */}
+          {(fileName || imageDataUrl) && (
+            <button
+              type="button"
+              onClick={onRemoveImage}
+              className="ml-3 text-xs px-2 py-1 rounded border border-gray-300 hover:bg-gray-100"
+            >
+              Remove image
+            </button>
+          )}
+
           {imageDataUrl && (
             <div className="mt-3">
               <img
