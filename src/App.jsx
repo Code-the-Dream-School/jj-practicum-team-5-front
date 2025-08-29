@@ -1,3 +1,4 @@
+import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout.jsx";
 import HomePage from "./pages/HomePage.jsx";
@@ -18,18 +19,19 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUpForm />} />
-          <Route path="/project/new" element={<ProjectFormPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          {/* Project list/default project */}
+
+          {/* IMPORTANT: creation route must come before the param route */}
+          <Route path="/project/new" element={<ProjectFormPage />} />
+
+          {/* ADDED: plain /project shows default/first project */}
           <Route path="/project" element={<ProjectPage />} />
-          {/* Specific project by ID  */}
+
+          {/* UNIFIED: use :projectId everywhere (not :id) */}
           <Route path="/project/:projectId" element={<ProjectPage />} />
 
-          {/* Step inside specific project */}
-          <Route
-            path="/project/:projectId/step/:stepId"
-            element={<StepPage />}
-          />
+          {/* Step route stays consistent with :projectId */}
+          <Route path="/project/:projectId/step/:stepId" element={<StepPage />} />
 
           <Route path="*" element={<div>Not Found</div>} />
         </Route>
