@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 
+
 const EditProject = ({ project, isOpen, onClose, onSave }) => {
     const [formData, setFormData] = useState({
         title: project?.title || '',

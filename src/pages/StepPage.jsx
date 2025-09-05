@@ -1,217 +1,124 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link, useLocation, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 import Badge from "../components/Badge";
 import ProgressBar from "../components/ProgressBar";
+import DueBanner from "../components/DueBanner";
 
-/* Storage (projects_v1)  */
-const PROJECTS_KEY = "projects_v1";
-const loadProjects = () => {
-  try {
-    return JSON.parse(localStorage.getItem(PROJECTS_KEY) || "[]");
-  } catch {
-    return [];
-  }
-};
-const saveProjects = (projects) =>
-  localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
+import { getDueInfo } from "../utils/due";
+import { derive, toVariant } from "../utils/derive";
+import { projectsStore } from "../utils/projectsStore";
 
-/* Progress & status  */
-export function derive(step) {
-  const total = step?.subtasks?.length || 0;
-  const done = step?.subtasks?.filter((t) => t.done).length || 0;
-  const progress = total ? Math.round((done / total) * 100) : 0;
-
-  let status = "Not Started";
-  const overdue =
-    step?.dueDate && new Date(step.dueDate) < new Date() && done < total;
-  if (overdue) status = "Overdue";
-  else if (done === 0) status = "Not Started";
-  else if (done === total) status = "Completed";
-  else status = "In Progress";
-
-  return { progress, status, total, done };
-}
-
-const toVariant = (status) => {
-  switch (status) {
-    case "Completed":
-      return "success";
-    case "In Progress":
-      return "warning";
-    case "Overdue":
-      return "error";
-    case "Not Started":
-    default:
-      return "neutral";
-  }
-};
-
-/*  Page  */
 export default function StepPage() {
-  // expected route: /project/:projectId/step/:stepId
-  const { projectId, stepId } = useParams();
-  const location = useLocation();
-  const stateStep = location.state?.step || null; // optional fallback when navigating with state
+  const { projectId, stepId: stepIdParam } = useParams(); // /project/:projectId/step/:stepId
+  const stepId = Number(stepIdParam);
 
-  // keep all projects in state
-  const [projects, setProjects] = useState(() => loadProjects());
+  // Load all projects once
+  const [projects, setProjects] = useState(() => projectsStore.load());
 
-  // find current project by id
-  const project = useMemo(
+  // Persist on change
+  useEffect(() => {
+    projectsStore.save(projects);
+  }, [projects]);
+
+  // Locate current project & step
+  const currentProject = useMemo(
     () => projects.find((p) => p.id === projectId) || null,
     [projects, projectId]
   );
 
-  // interpret stepId as number if numeric, otherwise keep as string
-  const normalizeId = (x) => {
-    const n = Number(x);
-    return Number.isFinite(n) && String(n) === String(x) ? n : String(x);
-  };
-  const sid = normalizeId(stepId);
+  const step = useMemo(() => {
+    if (!currentProject) return null;
+    return (currentProject.steps || []).find((s) => s.id === stepId) || null;
+  }, [currentProject, stepId]);
 
-  // find step within the current project
-  const findStep = (proj) =>
-    proj?.steps?.find((s) => String(s.id) === String(sid)) || null;
-
-  const [step, setStep] = useState(() => findStep(project));
-
-  // if step came only from Link state, insert into project and persist
-  useEffect(() => {
-    if (!project) return;
-    if (!step && stateStep && String(stateStep.id) === String(sid)) {
-      const nextProject = {
-        ...project,
-        steps: [
-          ...(project.steps || []),
-          { ...stateStep, subtasks: stateStep.subtasks || [] },
-        ],
-      };
-      setProjects((prev) => {
-        const idx = prev.findIndex((p) => p.id === project.id);
-        const copy = [...prev];
-        if (idx === -1) copy.unshift(nextProject);
-        else copy[idx] = nextProject;
-        saveProjects(copy);
-        return copy;
-      });
-      setStep(stateStep);
-    }
-  }, [project, stateStep, sid]);
-
-  // refresh local step if projects change
-  useEffect(() => {
-    setStep(findStep(project));
-  }, [project]);
-
+  // Derived meta
   const meta = useMemo(() => derive(step || {}), [step]);
   const variant = toVariant(meta.status);
+  const stepDueInfo = getDueInfo(step?.dueDate, meta.progress === 100);
 
-  // update project in array and persist
-  const upsertProject = (nextProject) => {
-    setProjects((prev) => {
-      const idx = prev.findIndex((p) => p.id === nextProject.id);
-      const copy = [...prev];
-      if (idx === -1) copy.unshift(nextProject);
-      else copy[idx] = nextProject;
-      saveProjects(copy);
-      return copy;
-    });
-  };
-
-  // update this step inside its project
-  const updateAndPersist = (updatedStep) => {
-    if (!project) return;
-    const nextSteps = (project.steps || []).some(
-      (s) => String(s.id) === String(updatedStep.id)
-    )
-      ? project.steps.map((s) =>
-          String(s.id) === String(updatedStep.id) ? updatedStep : s
-        )
-      : [...(project.steps || []), updatedStep];
-
-    const nextProject = { ...project, steps: nextSteps };
-    setStep(updatedStep);
-    upsertProject(nextProject);
-  };
-
-  const setDescription = (val) =>
-    updateAndPersist({ ...step, description: val });
-
-  const setDueDate = (val) =>
-    updateAndPersist({
-      ...step,
-      // store ISO string or null
-      dueDate: val ? new Date(val).toISOString() : null,
-    });
-
-  const toggleSubtask = (tid) => {
-    const subtasks = (step?.subtasks || []).map((t) =>
-      String(t.id) === String(tid) ? { ...t, done: !t.done } : t
-    );
-    updateAndPersist({ ...step, subtasks });
-  };
-
-  const editSubtaskTitle = (tid, title) => {
-    const subtasks = (step?.subtasks || []).map((t) =>
-      String(t.id) === String(tid) ? { ...t, title } : t
-    );
-    updateAndPersist({ ...step, subtasks });
-  };
-
-  const addSubtask = () => {
-    const list = step?.subtasks || [];
-    // support numeric IDs if existing, otherwise fallback to string
-    const nextNumeric =
-      list.length && list.every((t) => Number.isFinite(Number(t.id)))
-        ? Math.max(...list.map((t) => Number(t.id))) + 1
-        : null;
-    const newId =
-      nextNumeric ?? `${Date.now()}-${(list.length + 1).toString(36)}`;
-
-    updateAndPersist({
-      ...step,
-      subtasks: [...list, { id: newId, title: `New item`, done: false }],
-    });
-  };
-
-  const removeSubtask = (tid) =>
-    updateAndPersist({
-      ...step,
-      subtasks: (step?.subtasks || []).filter(
-        (t) => String(t.id) !== String(tid)
-      ),
-    });
-
-  /*  Guards  */
-  if (!project) {
+  if (!currentProject || !step) {
     return (
       <div className="max-w-xl mx-auto p-4">
-        <p className="mb-3">Project not found.</p>
-        <Link to="/project" className="text-blue-600 underline">
-          ← Back to Projects
-        </Link>
-      </div>
-    );
-  }
-
-  if (!step) {
-    return (
-      <div className="max-w-xl mx-auto p-4">
-        <p className="mb-3">Step not found.</p>
-        <Link to={`/project/${project.id}`} className="text-blue-600 underline">
+        <p className="mb-3">
+          {(!currentProject && "Project not found.") ||
+            (!step && "Step not found.")}
+        </p>
+        <Link
+          to={currentProject ? `/project/${currentProject.id}` : "/project"}
+          className="text-blue-600 underline"
+        >
           ← Back to Project
         </Link>
       </div>
     );
   }
 
+  // Update the step inside the current project and persist
+  const updateStep = (updater) => {
+    setProjects((prev) =>
+      prev.map((p) =>
+        p.id !== currentProject.id
+          ? p
+          : {
+              ...p,
+              steps: (p.steps || []).map((s) =>
+                s.id === step.id ? updater(s) : s
+              ),
+            }
+      )
+    );
+  };
+
+  const setDescription = (val) =>
+    updateStep((s) => ({ ...s, description: val }));
+  const setDueDate = (val) =>
+    updateStep((s) => ({ ...s, dueDate: val || null })); // 'YYYY-MM-DD'
+
+  const toggleSubtask = (tid) =>
+    updateStep((s) => ({
+      ...s,
+      subtasks: (s.subtasks || []).map((t) =>
+        t.id === tid ? { ...t, done: !t.done } : t
+      ),
+    }));
+
+  const editSubtaskTitle = (tid, title) =>
+    updateStep((s) => ({
+      ...s,
+      subtasks: (s.subtasks || []).map((t) =>
+        t.id === tid ? { ...t, title } : t
+      ),
+    }));
+
+  const addSubtask = () =>
+    updateStep((s) => {
+      const list = s.subtasks || [];
+      const nextId =
+        list.length && typeof list[0]?.id === "number"
+          ? Math.max(...list.map((t) => Number(t.id) || 0)) + 1
+          : list.length + 1;
+      return {
+        ...s,
+        subtasks: [
+          ...list,
+          { id: nextId, title: `New item ${nextId}`, done: false },
+        ],
+      };
+    });
+
+  const removeSubtask = (tid) =>
+    updateStep((s) => ({
+      ...s,
+      subtasks: (s.subtasks || []).filter((t) => t.id !== tid),
+    }));
+
   return (
     <div className="max-w-xl mx-auto p-4 bg-gray-50 border border-gray-200 rounded-xl shadow-sm">
       {/* Header */}
-      <div className="flex items-center gap-2 border-b border-gray-200 pb-3 mb-4">
+      <div className="flex items-center gap-2 border border-gray-200 pb-3 mb-4">
         <Link
-          to={`/project/${project.id}`}
+          to={`/project/${currentProject.id}`}
           className="text-sm px-2 py-1 rounded hover:bg-gray-100"
         >
           ← Back
@@ -224,6 +131,12 @@ export default function StepPage() {
           </span>
         </div>
       </div>
+
+      {/* <24h warning */}
+      <DueBanner
+        dueInfo={stepDueInfo}
+        text="less than 24 hours to the deadline"
+      />
 
       {/* Description */}
       <label htmlFor="step-desc" className="block text-sm text-gray-600 mb-1">
@@ -246,11 +159,7 @@ export default function StepPage() {
         <input
           id="due-date"
           type="date"
-          value={
-            step.dueDate
-              ? new Date(step.dueDate).toISOString().slice(0, 10)
-              : ""
-          }
+          value={step.dueDate || ""}
           onChange={(e) => setDueDate(e.target.value)}
           className="border border-gray-300 rounded px-2 py-1 text-sm"
         />

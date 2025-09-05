@@ -1,3 +1,4 @@
+import React from "react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Timeline from "../components/TimeLine.jsx";
@@ -18,7 +19,9 @@ export default function ProjectsSliderPage() {
         const fetchProjects = async () => {
             try {
                 setLoading(true);
+
                 const response = await fetch("http://localhost:8000/api/v1/projects");
+
                 if (!response.ok) {
                     throw new Error("Failed to fetch projects");
                 }
@@ -45,7 +48,7 @@ export default function ProjectsSliderPage() {
 
     const handleSaveProject = async (updatedProject) => {
         try {
-            const response = await fetch(`http://localhost:8000/api/projects/${updatedProject.id}`, {
+            const response = await fetch(`/api/v1/projects/${updatedProject.id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(updatedProject),
