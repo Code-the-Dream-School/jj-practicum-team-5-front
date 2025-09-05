@@ -9,16 +9,17 @@ export default function LoginPage() {
     const [error, setError] = useState("")
 
     const navigate = useNavigate();
+    const API_URL = import.meta.env.VITE_API_URL;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
+        setError("");
+
         console.log("Login submitted:", {email, password});
 
-        setTimeout(() => setIsSubmitting(false), 1500);
-
         try {
-            const response = await fetch('/api/v1/authRoutes/loginUser', {
+            const response = await fetch(`${API_URL}/api/v1/authRoutes/loginUser`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -27,18 +28,13 @@ export default function LoginPage() {
             });
 
             const data = await response.json();
+            console.log("Login response:", data);
 
-            if (response.ok) {
-                if (data.token) {
-                    localStorage.setItem('authToken', data.token);
-                }
+            if (response.ok && data.success) {
+                if (data.token) localStorage.setItem("authToken", data.token);
+                if (data.user) localStorage.setItem("user", JSON.stringify(data.user));
 
-                if (data.user) {
-                    localStorage.setItem('user', JSON.stringify(data.user));
-                }
-
-                console.log("Login successful:", data);
-
+                console.log("Login successful, navigating to dashboard...");
                 navigate('/dashboard');
             } else {
                 setError(data.message || 'Login failed. Please try again.');
