@@ -6,6 +6,7 @@ export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState("")
 
     const navigate = useNavigate();
 
@@ -17,7 +18,7 @@ export default function LoginPage() {
         setTimeout(() => setIsSubmitting(false), 1500);
 
         try {
-            const response = await fetch('/api/v1/auth/loginUser', {
+            const response = await fetch('/api/v1/authRoutes/loginUser', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -113,6 +114,9 @@ export default function LoginPage() {
                             'Sign In'
                         )}
                     </button>
+                    {error && (
+                        <p className="text-red-500 text-sm mb-4">{error}</p>
+                    )}
 
                     <div className="mt-6 text-center">
                         <a href="#" className="text-sm text-indigo-600 hover:text-indigo-800 hover:underline">
