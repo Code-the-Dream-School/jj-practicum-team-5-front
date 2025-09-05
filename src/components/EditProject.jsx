@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 
 const EditProject = ({ project, isOpen, onClose, onSave }) => {
@@ -11,6 +11,18 @@ const EditProject = ({ project, isOpen, onClose, onSave }) => {
 
     const [imagePreview, setImagePreview] = useState(project?.image || '');
     const fileInputRef = useRef(null);
+
+    useEffect(() => {
+        if (project) {
+            setFormData({
+                title: project.title || '',
+                description: project.description || '',
+                date: project.date || '',
+                imageFile: null,
+            });
+            setImagePreview(project.image || null);
+        }
+    }, [project]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -25,57 +37,60 @@ const EditProject = ({ project, isOpen, onClose, onSave }) => {
         if (file) {
             const reader = new FileReader();
             reader.onload = (e) => {
-                const base64 = e.target.result;
-                setImagePreview(base64);
+                setImagePreview(e.target.result);
+            };
+                reader.readAsDataURL(file);
                 setFormData(prev => ({
                     ...prev,
                     imageFile: file,
-                    image: base64
                 }));
             };
-            reader.readAsDataURL(file);
         }
-    };
 
     const handleRemoveImage = () => {
         setImagePreview('');
         setFormData(prev => ({
             ...prev,
             imageFile: null,
-            image: ''
         }));
-        if (fileInputRef.current) {
-            fileInputRef.current.value = '';
-        }
+        if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!formData.title.trim()) {
             alert('Project title required');
             return;
         }
-        const formDataToSend = new FormData();
-        formDataToSend.append('title', formData.title);
-        formDataToSend.append('description', formData.description);
-        formDataToSend.append('date', formData.date);
+        try {
+            const data = new FormData();
+            data.append('title', formData.title);
+            data.append('description', formData.description);
+            data.append('date', formData.date);
+            if (formData.imageFile) data.append('image', formData.imageFile);
 
-        if (formData.imageFile) {
-            formDataToSend.append('image', formData.imageFile);
-        } else if (formData.image) {
-            formDataToSend.append('imageUrl', formData.image);
-        }
+            const response = await fetch(`/api/v1/projects/${project.id}`, {
+                method: 'PUT',
+                body: data
+            });
 
-        onSave({ ...project, ...formData, formData: formDataToSend });
-        onClose();
-    };
+            if (!response.ok) throw new Error('Failed to update project');
 
-    const handleBackdropClick = (e) => {
-        if (e.target === e.currentTarget) {
+            const updatedProject = await response.json();
+            onSave(updatedProject);
             onClose();
+        } catch (err) {
+            console.error(err);
+            alert('Error saving project: ' + err.message);
         }
     };
 
-    if (!isOpen) return null;
+const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+        onClose();
+    }
+};
+
+if (!isOpen) return null;
 
     return (
         <div
@@ -194,7 +209,7 @@ const EditProject = ({ project, isOpen, onClose, onSave }) => {
                         </div>
 
                         <p className="text-xs text-gray-500 mt-2">
-                            Upload an image file or paste a URL
+                            Upload an image file
                         </p>
                     </div>
                 </div>

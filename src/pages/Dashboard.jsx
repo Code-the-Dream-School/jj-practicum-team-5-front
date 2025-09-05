@@ -19,7 +19,9 @@ export default function ProjectsSliderPage() {
         const fetchProjects = async () => {
             try {
                 setLoading(true);
-                const response = await fetch("/api/v1/projects");
+
+                const response = await fetch("http://localhost:8000/api/v1/projects");
+
                 if (!response.ok) {
                     throw new Error("Failed to fetch projects");
                 }
