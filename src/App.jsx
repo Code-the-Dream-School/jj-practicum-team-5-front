@@ -8,11 +8,13 @@ import Dashboard from "./pages/Dashboard.jsx";
 import ProjectPage from "./pages/ProjectPage.jsx";
 import StepPage from "./pages/StepPage";
 import ProjectFormPage from "./pages/ProjectFormPage.jsx";
+import { AuthProvider } from './contexts/AuthContext';
 
 import "./index.css";
 
 export default function App() {
   return (
+      <AuthProvider>
     <BrowserRouter>
       <Routes>
         <Route element={<MainLayout />}>
@@ -37,5 +39,6 @@ export default function App() {
         </Route>
       </Routes>
     </BrowserRouter>
+        </AuthProvider>
   );
 }

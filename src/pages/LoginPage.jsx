@@ -1,5 +1,5 @@
-import { useState } from "react";
-import {useNavigate} from "react-router-dom";
+import { useState, useEffect } from "react";
+import {useNavigate, useLocation} from "react-router-dom";
 
 
 export default function LoginPage() {
@@ -9,7 +9,13 @@ export default function LoginPage() {
     const [error, setError] = useState("")
 
     const navigate = useNavigate();
+    const location = useLocation();
     const API_URL = import.meta.env.VITE_API_URL;
+
+    useEffect(() => {
+        console.log('Current location:', location.pathname);
+        console.log('Navigate function:', typeof navigate);
+    }, [location, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -31,11 +37,17 @@ export default function LoginPage() {
             console.log("Login response:", data);
 
             if (response.ok && data.success) {
-                if (data.token) localStorage.setItem("authToken", data.token);
-                if (data.user) localStorage.setItem("user", JSON.stringify(data.user));
+                if (data.token) {
+                    localStorage.setItem('authToken', data.token);
+                }
+                if (data.user) {
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                }
+                localStorage.setItem('isAuthenticated', 'true');
 
                 console.log("Login successful, navigating to dashboard...");
-                navigate('/dashboard');
+
+                navigate('/dashboard', { replace: true });
             } else {
                 setError(data.message || 'Login failed. Please try again.');
             }

@@ -19,7 +19,11 @@ export default function ProjectsSliderPage() {
         const fetchProjects = async () => {
             try {
                 setLoading(true);
-
+                const isAuthenticated = localStorage.getItem("isAuthenticated");
+                if (isAuthenticated !== 'true') {
+                    navigate("/login");
+                    return;
+                }
                 const token = localStorage.getItem("authToken");
                 if (!token) {
                     navigate("/login");
@@ -33,7 +37,7 @@ export default function ProjectsSliderPage() {
                 if (!response.ok) throw new Error("Failed to fetch projects");
 
                 const data = await response.json();
-                setProjects(data);
+                setProjects(data.projects || []);
             } catch (err) {
                 setError(err.message);
             } finally {
