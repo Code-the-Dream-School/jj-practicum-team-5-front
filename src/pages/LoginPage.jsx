@@ -26,6 +26,7 @@ export default function LoginPage() {
 
         try {
             const response = await fetch(`${API_URL}/api/v1/authRoutes/loginUser`, {
+
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -123,8 +124,10 @@ export default function LoginPage() {
                         )}
                     </button>
                     {error && (
+
                         <p className="text-red-500 text-sm mb-4">{error}</p>
                     )}
+
 
                     <div className="mt-6 text-center">
                         <a href="#" className="text-sm text-indigo-600 hover:text-indigo-800 hover:underline">

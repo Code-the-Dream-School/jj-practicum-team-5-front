@@ -102,7 +102,9 @@ export default function SignUpForm() {
         setIsLoading(true);
 
         try {
+
             const res = await fetch(`${API_URL}/api/v1/authRoutes`, {
+
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -123,6 +125,7 @@ export default function SignUpForm() {
         } catch (err) {
             console.error(err);
             alert('Network error. Please try again.');
+
         } finally {
             setIsLoading(false);
         }

@@ -23,6 +23,7 @@ export default function ProjectsSliderPage() {
                 if (isAuthenticated !== 'true') {
                     navigate("/login");
                     return;
+
                 }
                 const token = localStorage.getItem("authToken");
                 if (!token) {
