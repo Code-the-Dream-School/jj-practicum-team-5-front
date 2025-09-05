@@ -90,10 +90,25 @@ export default function SignUpForm() {
         setIsLoading(true);
 
         try {
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            const response = await fetch('/api/v1/auth', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    first: formData.firstName,
+                    last: formData.lastName,
+                    email: formData.email,
+                    password: formData.password,
+                }),
+            });
 
-            alert('Registration successful!');
+            const data = await response.json();
 
+            if (response.ok) {
+                alert('Registration successful!');
+                navigate('/login');
+            } else {
+                alert(data.error || 'Registration failed.');
+            }
         } catch (error) {
             alert('Registration failed. Please try again.');
         } finally {
