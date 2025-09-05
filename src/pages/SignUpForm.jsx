@@ -1,5 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {useNavigate} from "react-router-dom";
+
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default function SignUpForm() {
     const [formData, setFormData] = useState({
@@ -14,6 +17,8 @@ export default function SignUpForm() {
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -27,6 +32,37 @@ export default function SignUpForm() {
             setErrors(prev => ({ ...prev, [name]: '' }));
         }
     };
+
+    useEffect(() => {
+        if (!formData.email) return;
+
+        const timer = setTimeout(async () => {
+            if (!validateEmail(formData.email)) {
+                setErrors(prev => ({ ...prev, email: "Enter a valid email" }));
+                return;
+            }
+
+            try {
+                setIsCheckingEmail(true);
+                const res = await fetch(`${API_URL}/api/v1/authRoutes/check-email`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: formData.email })
+                });
+                const data = await res.json();
+                if (data.exists) {
+                    setErrors(prev => ({ ...prev, email: "This email is already in use" }));
+                }
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setIsCheckingEmail(false);
+            }
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [formData.email]);
+
     function validateEmail(email) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
@@ -174,6 +210,7 @@ export default function SignUpForm() {
                                 }`}
                                 placeholder="test@example.com"
                             />
+                            {isCheckingEmail && <p className="text-gray-500 text-sm">Checking...</p>}
                             {errors.email && (
                                 <p className="text-red-500 text-sm mt-1">{errors.email}</p>
                             )}

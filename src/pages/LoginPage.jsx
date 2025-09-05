@@ -17,7 +17,7 @@ export default function LoginPage() {
         setTimeout(() => setIsSubmitting(false), 1500);
 
         try {
-            const response = await fetch('/api/v1/authRoutes/loginUser', {
+            const response = await fetch('/api/v1/auth/loginUser', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
