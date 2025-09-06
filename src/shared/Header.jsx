@@ -1,7 +1,12 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import React from "react";
 
 export default function Header() {
+    const location = useLocation();
+
+    const isHome = location.pathname === "/";
+    const isLogin = location.pathname === "/login";
+
     return (
         <header
             style={{
@@ -14,8 +19,8 @@ export default function Header() {
             }}
         >
             <nav style={{ display: "flex", gap: "1rem" }}>
-                <Link to="/">Home</Link>
-                <Link to="/login">Login</Link>
+                {!isHome && <Link to="/">Home</Link>}
+                {!isLogin && <Link to="/login">Login</Link>}
             </nav>
 
             <h1 style={{ margin: 0, flexGrow: 1, textAlign: "center" }}>
