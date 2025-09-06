@@ -1,24 +1,32 @@
-import { useState } from "react";
-import {useNavigate} from "react-router-dom";
+import { useState, useEffect } from "react";
+import {useNavigate, useLocation} from "react-router-dom";
 
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState("");
+    const [error, setError] = useState("")
 
     const navigate = useNavigate();
+    const location = useLocation();
+    const API_URL = import.meta.env.VITE_API_URL;
+
+    useEffect(() => {
+        console.log('Current location:', location.pathname);
+        console.log('Navigate function:', typeof navigate);
+    }, [location, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
+        setError("");
+
         console.log("Login submitted:", {email, password});
 
-        setTimeout(() => setIsSubmitting(false), 1500);
-
         try {
-            const response = await fetch('/api/v1/auth/loginUser', {
+            const response = await fetch(`${API_URL}/api/v1/authRoutes/loginUser`, {
+
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -27,19 +35,20 @@ export default function LoginPage() {
             });
 
             const data = await response.json();
+            console.log("Login response:", data);
 
-            if (response.ok) {
+            if (response.ok && data.success) {
                 if (data.token) {
                     localStorage.setItem('authToken', data.token);
                 }
-
                 if (data.user) {
                     localStorage.setItem('user', JSON.stringify(data.user));
                 }
+                localStorage.setItem('isAuthenticated', 'true');
 
-                console.log("Login successful:", data);
+                console.log("Login successful, navigating to dashboard...");
 
-                navigate('/dashboard');
+                navigate('/dashboard', { replace: true });
             } else {
                 setError(data.message || 'Login failed. Please try again.');
             }
@@ -115,8 +124,11 @@ export default function LoginPage() {
                         )}
                     </button>
                     {error && (
-                        <p className="mt-4 text-red-600 text-sm text-center">{error}</p>
+
+                        <p className="text-red-500 text-sm mb-4">{error}</p>
                     )}
+
+
                     <div className="mt-6 text-center">
                         <a href="#" className="text-sm text-indigo-600 hover:text-indigo-800 hover:underline">
                             Forgot password?
