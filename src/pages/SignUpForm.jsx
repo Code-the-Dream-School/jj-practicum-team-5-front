@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect,  } from "react";
 import { useNavigate } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -117,8 +117,13 @@ export default function SignUpForm() {
 
             const data = await res.json();
 
+            console.log('Status:', res.status);
+            console.log('Response data:', data);
+
             if (res.ok) {
-                navigate('/login');
+                localStorage.setItem("token", data.token);
+
+                navigate('/dashboard', { replace: true });
             } else {
                 alert(data.error || 'Registration failed');
             }
