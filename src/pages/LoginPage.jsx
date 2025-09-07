@@ -25,7 +25,7 @@ export default function LoginPage() {
         console.log("Login submitted:", {email, password});
 
         try {
-            const response = await fetch(`${API_URL}/api/v1/authRoutes/loginUser`, {
+            const response = await fetch(`${API_URL}/api/v1/auth/loginUser`, {
 
                 method: 'POST',
                 headers: {

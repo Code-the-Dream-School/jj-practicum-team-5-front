@@ -42,7 +42,7 @@ export default function SignUpForm() {
 
             try {
                 setIsCheckingEmail(true);
-                const res = await fetch(`${API_URL}/api/v1/authRoutes/check-email`, {
+                const res = await fetch(`${API_URL}/api/v1/auth/check-email`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ email: formData.email })
@@ -103,7 +103,7 @@ export default function SignUpForm() {
 
         try {
 
-            const res = await fetch(`${API_URL}/api/v1/authRoutes`, {
+            const res = await fetch(`${API_URL}/api/v1/auth`, {
 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
