@@ -89,10 +89,13 @@ export default function ProjectFormPage() {
     if (fileInputRef.current?.files[0]) {
       formData.append("image", fileInputRef.current.files[0]);
     }
-
+    const token = localStorage.getItem("authToken");
     try {
       const res = await fetch("http://localhost:8000/api/v1/projects", {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
         body: formData
       });
 
