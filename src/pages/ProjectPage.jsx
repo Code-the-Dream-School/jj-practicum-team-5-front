@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import Badge from "../components/Badge";
 import ProgressBar from "../components/ProgressBar";
 import DueBanner from "../components/DueBanner";
+import NewStepModal from "../components/NewStepModal";
 
 import { getDueInfo } from "../utils/due";
 import { derive, toVariant } from "../utils/derive";
@@ -81,17 +82,24 @@ export default function ProjectPage() {
       ),
     }));
 
-  const addStep = () => {
+  // === Modal state & create handler ===
+  const [showNewStep, setShowNewStep] = useState(false);
+
+  const createStepFromModal = ({ title, description, dueDate }) => {
     if (!current) return;
     const steps = current.steps || [];
-    const nextId = steps.length ? Math.max(...steps.map((s) => s.id)) + 1 : 1;
+    const nextId = steps.length
+      ? Math.max(...steps.map((s) => Number(s.id) || 0)) + 1
+      : 1;
+
     const newStep = {
       id: nextId,
-      title: `New Step ${nextId}`,
-      description: "",
-      dueDate: null, // 'YYYY-MM-DD'
+      title: title || `New Step ${nextId}`,
+      description: description || "",
+      dueDate: dueDate || null, // 'YYYY-MM-DD'
       subtasks: [],
     };
+
     updateCurrentProject((p) => ({ ...p, steps: [...steps, newStep] }));
   };
 
@@ -171,7 +179,7 @@ export default function ProjectPage() {
       <div className="mt-6 mb-3 flex items-center justify-between">
         <h2 className="text-lg font-semibold">Key Steps</h2>
         <button
-          onClick={addStep}
+          onClick={() => setShowNewStep(true)}
           className="border border-gray-300 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100"
         >
           + Add Step
@@ -231,6 +239,12 @@ export default function ProjectPage() {
           );
         })}
       </div>
+
+      {/* Modal to create a new step */}
+      <NewStepModal
+        open={showNewStep}
+        onClose={() => setShowNewStep(false)}
+        onCreate={createStepFromModal}
+      />
     </div>
   );
-}
