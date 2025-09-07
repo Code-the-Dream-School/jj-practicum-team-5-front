@@ -65,36 +65,50 @@ export default function ProjectFormPage() {
     }
   };
 
-  const onSubmit = (e) => {
-    e.preventDefault();
-    if (!canSubmit) return;
+    const onSubmit = async (e) => {
+      e.preventDefault();
+      if (!canSubmit) return;
 
-    const all = projectsStore.load();
-    const newId = genId();
+      const formData = new FormData();
+      formData.append("title", title.trim());
+      formData.append("dueDate", dueDate);
+      formData.append("description", description.trim());
+      formData.append(
+          "steps",
+          JSON.stringify(
+              steps
+                  .filter((s) => s.title.trim())
+                  .map((s, idx) => ({
+                    id: idx + 1,
+                    title: s.title.trim(),
+                    description: "",
+                    dueDate: null,
+                    subtasks: [],
+                  }))
+          )
+      );
 
-    const initialSteps = steps
-      .filter((s) => s.title.trim())
-      .map((s, idx) => ({
-        id: idx + 1,
-        title: s.title.trim(),
-        description: "",
-        dueDate: null,
-        subtasks: [],
-      }));
+      if (fileInputRef.current?.files[0]) {
+        formData.append("image", fileInputRef.current.files[0]);
+      }
 
-    const newProject = {
-      id: newId,
-      title: title.trim(),
-      description: description.trim(),
-      createdAt: new Date().toISOString(),
-      dueDate, // 'YYYY-MM-DD'
-      image: imageDataUrl || null,
-      steps: initialSteps,
+      try {
+        const res = await fetch("http://localhost:8000/api/v1/projects", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to create project");
+        }
+
+        const newProject = await res.json();
+        navigate(`/project/${newProject._id}`);
+      } catch (err) {
+        console.error(err);
+        alert("Failed to create project");
+      }
     };
-
-    projectsStore.save([...(all || []), newProject]);
-    navigate(`/project/${newId}`);
-  };
 
   return (
     <div className="max-w-2xl mx-auto p-4 bg-gray-50 border border-gray-200 rounded-xl shadow-sm">

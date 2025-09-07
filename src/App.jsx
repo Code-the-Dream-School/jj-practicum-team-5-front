@@ -24,7 +24,7 @@ export default function App() {
           <Route path="/dashboard" element={<Dashboard />} />
 
           {/* IMPORTANT: creation route must come before the param route */}
-          <Route path="/project/new" element={<ProjectFormPage />} />
+          <Route path="/projects/new" element={<ProjectFormPage />} />
 
           {/* ADDED: plain /project shows default/first project */}
           <Route path="/project" element={<ProjectPage />} />
