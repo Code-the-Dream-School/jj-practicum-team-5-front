@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect,  } from "react";
 import { useNavigate } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -42,7 +42,7 @@ export default function SignUpForm() {
 
             try {
                 setIsCheckingEmail(true);
-                const res = await fetch(`${API_URL}/api/v1/authRoutes/check-email`, {
+                const res = await fetch(`${API_URL}/api/v1/auth/check-email`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ email: formData.email })
@@ -103,7 +103,7 @@ export default function SignUpForm() {
 
         try {
 
-            const res = await fetch(`${API_URL}/api/v1/authRoutes`, {
+            const res = await fetch(`${API_URL}/api/v1/auth`, {
 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -117,8 +117,13 @@ export default function SignUpForm() {
 
             const data = await res.json();
 
+            console.log('Status:', res.status);
+            console.log('Response data:', data);
+
             if (res.ok) {
-                navigate('/login');
+                localStorage.setItem("token", data.token);
+
+                navigate('/dashboard', { replace: true });
             } else {
                 alert(data.error || 'Registration failed');
             }
