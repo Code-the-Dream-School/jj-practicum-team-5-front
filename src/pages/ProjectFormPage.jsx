@@ -72,21 +72,19 @@ export default function ProjectFormPage() {
     const formData = new FormData();
     formData.append("title", title.trim());
     formData.append("dueDate", dueDate);
-    formData.append("description", description.trim());
-    formData.append(
-        "steps",
-        JSON.stringify(
-            steps
-                .filter((s) => s.title.trim())
-                .map((s, idx) => ({
-                  id: idx + 1,
-                  title: s.title.trim(),
-                  description: "",
-                  dueDate: null,
-                  subtasks: [],
-                }))
-        )
-    );
+    formData.append("description", description || "");
+
+    const filteredSteps = steps
+        .filter((s) => s.title.trim())
+        .map((s, idx) => ({
+          id: idx + 1,
+          title: s.title.trim(),
+          completed: false
+        }));
+
+    if (filteredSteps.length) {
+      formData.append("steps", JSON.stringify(filteredSteps));
+    }
 
     if (fileInputRef.current?.files[0]) {
       formData.append("image", fileInputRef.current.files[0]);
@@ -95,12 +93,10 @@ export default function ProjectFormPage() {
     try {
       const res = await fetch("http://localhost:8000/api/v1/projects", {
         method: "POST",
-        body: formData,
+        body: formData
       });
 
-      if (!res.ok) {
-        throw new Error("Failed to create project");
-      }
+      if (!res.ok) throw new Error("Failed to create project");
 
       const newProject = await res.json();
       navigate(`/project/${newProject._id}`);
