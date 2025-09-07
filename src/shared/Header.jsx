@@ -1,16 +1,19 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../contexts/AuthContext";
 
 export default function Header() {
     const { isAuthenticated, logout } = useContext(AuthContext);
     const navigate = useNavigate();
+    const location = useLocation();
+
+    const isDashboardPage = location.pathname === "/dashboard";
 
     return (
         <header style={{ display: "flex", justifyContent: "space-between", padding: "1rem 2rem", borderBottom: "1px solid #ccc" }}>
             <nav style={{ display: "flex", gap: "1rem" }}>
                 <Link to="/">Home</Link>
-                {isAuthenticated && <Link to="/dashboard">Dashboard</Link>}
+                {isAuthenticated && !isDashboardPage && <Link to="/dashboard">Dashboard</Link>}
             </nav>
 
             <h1 style={{ margin: 0, flexGrow: 1, textAlign: "center" }}>Project Management System</h1>
