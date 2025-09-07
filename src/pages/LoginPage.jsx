@@ -1,13 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import {useNavigate, useLocation} from "react-router-dom";
-
+import { AuthContext } from "../contexts/AuthContext";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState("")
-
+    const { login } = useContext(AuthContext);
     const navigate = useNavigate();
     const location = useLocation();
     const API_URL = import.meta.env.VITE_API_URL;
@@ -33,7 +33,6 @@ export default function LoginPage() {
                 },
                 body: JSON.stringify({email, password}),
             });
-
             const data = await response.json();
             console.log("Login response:", data);
 
@@ -47,7 +46,7 @@ export default function LoginPage() {
                 localStorage.setItem('isAuthenticated', 'true');
 
                 console.log("Login successful, navigating to dashboard...");
-
+                login(data.token);
                 navigate('/dashboard', { replace: true });
             } else {
                 setError(data.message || 'Login failed. Please try again.');
