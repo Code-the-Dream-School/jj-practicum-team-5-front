@@ -48,6 +48,10 @@ export default function Dashboard() {
                 console.log("Projects array:", result.projects);
                 console.log("Projects count:", result.projects?.length || 0);
 
+                if (result.projects && result.projects.length > 0) {
+                    console.log("Sample project steps structure:", result.projects[0].steps);
+                }
+
                 setProjects(result.projects || []);
             } catch (err) {
                 console.error("Error fetching projects:", err);
@@ -129,7 +133,6 @@ export default function Dashboard() {
                     </button>
                 </div>
 
-
                 <div className="text-center mb-6">
                     <p className="text-gray-600">Total projects: {projects.length}</p>
                 </div>
@@ -185,9 +188,15 @@ export default function Dashboard() {
                                             <div className="flex space-x-2 mt-4">
                                                 <button
                                                     onClick={() => navigate(`/project/${project._id}`)}
-                                                    className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 px-4 rounded-xl font-medium text-sm hover:from-blue-700 hover:to-purple-700 transition-all duration-300"
+                                                    className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 px-4 rounded-xl font-medium text-sm hover:from-blue-700 hover:to-purple-700 transition-all duration-300 hover:scale-105"
                                                 >
                                                     View Details
+                                                </button>
+                                                <button
+                                                    onClick={() => navigate(`/project/edit/${project._id}`)}
+                                                    className="px-4 py-2 border-2 border-gray-300 text-gray-600 rounded-xl font-medium text-sm hover:border-gray-400 hover:text-gray-700 transition-all duration-300"
+                                                >
+                                                    Edit
                                                 </button>
                                             </div>
                                         </div>
