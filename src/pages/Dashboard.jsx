@@ -56,7 +56,7 @@ export default function ProjectsSliderPage() {
 
     const handleSaveProject = async (updatedProject) => {
         try {
-            const response = await fetch(`/api/v1/projects/${updatedProject.id}`, {
+            const response = await fetch(`/api/v1/projects/${updatedProject._id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(updatedProject),
@@ -68,7 +68,7 @@ export default function ProjectsSliderPage() {
             const savedProject = await response.json();
             setProjects(prevProjects =>
                 prevProjects.map(project =>
-                    project.id === savedProject.id ? savedProject : project
+                    project.id === savedProject._id ? savedProject : project
                 )
             );
         } catch (err) {
@@ -209,7 +209,7 @@ export default function ProjectsSliderPage() {
                                                 <div className="flex space-x-2">
                                                     <button
                                                         type="button"
-                                                        onClick={() => navigate(`/project/${project.id}`)}
+                                                        onClick={() => navigate(`/project/${project._id}`)}
                                                         className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 px-4 rounded-xl font-medium text-sm hover:from-blue-700 hover:to-purple-700 transition-all duration-300 hover:scale-105"
                                                     >
                                                         View Details
