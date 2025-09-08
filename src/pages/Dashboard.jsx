@@ -67,15 +67,15 @@ export default function Dashboard() {
     const getStatusColor = (status) => {
         switch (status) {
             case "Completed":
-                return "bg-green-100 text-green-800";
+                return "bg-green-100 text-green-800 border border-green-200";
             case "In Progress":
-                return "bg-blue-100 text-blue-800";
+                return "bg-blue-100 text-blue-800 border border-blue-200";
             case "Not started":
-                return "bg-purple-100 text-purple-800";
+                return "bg-purple-100 text-purple-800 border border-purple-200";
             case "Overdue":
-                return "bg-red-100 text-red-800";
+                return "bg-red-100 text-red-800 border border-red-200";
             default:
-                return "bg-gray-100 text-gray-800";
+                return "bg-gray-100 text-gray-800 border border-gray-200";
         }
     };
 
@@ -92,10 +92,10 @@ export default function Dashboard() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 flex items-center justify-center">
-                <div className="text-center">
+            <div className="min-h-screen bg-blue-200 flex items-center justify-center">
+                <div className="text-center bg-white rounded-2xl p-8 shadow-xl border border-gray-200">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading projects...</p>
+                    <p className="text-gray-700 font-medium">Loading projects...</p>
                 </div>
             </div>
         );
@@ -103,14 +103,14 @@ export default function Dashboard() {
 
     if (error) {
         return (
-            <div className="min-h-screen bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 flex items-center justify-center">
-                <div className="bg-white rounded-lg p-6 shadow-lg max-w-md">
+            <div className="min-h-screen bg-blue-200 flex items-center justify-center">
+                <div className="bg-white rounded-2xl p-8 shadow-xl border border-gray-200 max-w-md">
                     <div className="text-red-600 text-center">
                         <h2 className="text-xl font-bold mb-2">Error</h2>
-                        <p>{error}</p>
+                        <p className="text-gray-700 mb-4">{error}</p>
                         <button
                             onClick={() => window.location.reload()}
-                            className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                         >
                             Try Again
                         </button>
@@ -121,47 +121,70 @@ export default function Dashboard() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 py-12">
-            <div className="max-w-7xl mx-auto px-4">
-                <div className="text-center mb-12 relative">
-                    <h1 className="text-4xl font-bold text-gray-800 mb-4">Event Projects</h1>
-                    <button
-                        onClick={() => navigate("/projects/new")}
-                        className="absolute top-0 right-0 bg-gradient-to-r from-green-600 to-blue-600 text-white py-3 px-6 rounded-xl font-medium text-sm hover:from-green-700 hover:to-blue-700 transition-all duration-300 hover:scale-105 shadow-lg flex items-center space-x-2"
-                    >
-                        Add New Project
-                    </button>
+        <div className="min-h-screen bg-blue-200">
+            {/* Header Section */}
+            <section className="relative py-12">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="text-center relative">
+                        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                            Event Projects
+                        </h1>
+                        <p className="text-lg text-gray-700 mb-8 max-w-2xl mx-auto">
+                            Manage and track all your event projects in one place
+                        </p>
+                        <button
+                            onClick={() => navigate("/projects/new")}
+                            className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                        >
+                            Add New Project
+                        </button>
+                    </div>
                 </div>
+            </section>
 
-                <div className="text-center mb-6">
-                    <p className="text-gray-600">Total projects: {projects.length}</p>
-                </div>
-
-                {projects.length === 0 ? (
-                    <div className="text-center py-12">
-                        <div className="bg-white rounded-2xl p-8 shadow-lg max-w-md mx-auto">
-                            <div className="text-6xl mb-4">📋</div>
-                            <h3 className="text-xl font-bold text-gray-800 mb-2">No Projects Yet</h3>
-                            <p className="text-gray-600 mb-6">Start by creating your first event project!</p>
-                            <button
-                                onClick={() => navigate("/projects/new")}
-                                className="bg-gradient-to-r from-green-600 to-blue-600 text-white py-3 px-6 rounded-xl font-medium hover:from-green-700 hover:to-blue-700 transition-all duration-300 hover:scale-105 shadow-lg"
-                            >
-                                Create First Project
-                            </button>
+            {/* Stats Section */}
+            <section className="py-6 bg-white">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="text-center">
+                        <div className="inline-flex items-center px-6 py-3 bg-gray-50 rounded-xl border border-gray-200">
+                            <span className="text-gray-700 font-medium">Total projects: </span>
+                            <span className="text-blue-700 font-bold text-lg ml-2">{projects.length}</span>
                         </div>
                     </div>
-                ) : (
-                    <div className="relative px-16">
-                        <div className="overflow-hidden rounded-2xl">
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                </div>
+            </section>
+
+            {/* Projects Section */}
+            <section className="py-12 bg-gradient-to-r from-gray-50 to-blue-50">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    {projects.length === 0 ? (
+                        <div className="text-center py-12">
+                            <div className="bg-white rounded-2xl p-8 shadow-xl max-w-md mx-auto border border-gray-200">
+                                <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                                    <span className="text-white text-3xl">📋</span>
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-4">No Projects Yet</h3>
+                                <p className="text-gray-600 mb-6 leading-relaxed">
+                                    Start by creating your first event project and begin organizing your tasks efficiently
+                                </p>
+                                <button
+                                    onClick={() => navigate("/projects/new")}
+                                    className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                                >
+                                    Create First Project
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="relative">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                 {visibleProjects.map((project) => (
                                     <div
                                         key={project._id}
-                                        className="bg-white rounded-2xl p-6 shadow-2xl border border-gray-100 transform transition-all duration-300 hover:scale-105 hover:shadow-3xl flex flex-col h-full"
+                                        className="bg-white rounded-2xl p-8 shadow-xl border border-gray-200 transform transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 flex flex-col h-full"
                                     >
                                         {project.image && (
-                                            <div className="mb-4 -mx-6 -mt-6">
+                                            <div className="mb-6 -mx-8 -mt-8">
                                                 <img
                                                     src={`${API_URL}${project.image}`}
                                                     alt={project.title}
@@ -176,25 +199,25 @@ export default function Dashboard() {
 
                                         <div className={project.image ? 'mt-4' : ''}>
                                             <span
-                                                className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
+                                                className={`px-4 py-2 rounded-full text-xs font-semibold ${getStatusColor(
                                                     project.status
                                                 )}`}
                                             >
                                                 {project.status}
                                             </span>
-                                            <h3 className="text-xl font-bold text-gray-800 mb-2 mt-3">{project.title}</h3>
-                                            <p className="text-gray-600 text-sm mb-4 flex-grow">{project.description}</p>
+                                            <h3 className="text-xl font-bold text-gray-900 mb-3 mt-4">{project.title}</h3>
+                                            <p className="text-gray-600 mb-6 flex-grow leading-relaxed">{project.description}</p>
                                             {project.steps && project.steps.length > 0 && <Timeline steps={project.steps} />}
-                                            <div className="flex space-x-2 mt-4">
+                                            <div className="flex space-x-3 mt-6">
                                                 <button
                                                     onClick={() => navigate(`/project/${project._id}`)}
-                                                    className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 px-4 rounded-xl font-medium text-sm hover:from-blue-700 hover:to-purple-700 transition-all duration-300 hover:scale-105"
+                                                    className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg"
                                                 >
                                                     View Details
                                                 </button>
                                                 <button
                                                     onClick={() => navigate(`/project/edit/${project._id}`)}
-                                                    className="px-4 py-2 border-2 border-gray-300 text-gray-600 rounded-xl font-medium text-sm hover:border-gray-400 hover:text-gray-700 transition-all duration-300"
+                                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:border-gray-400 hover:text-gray-900 transition-all duration-200 bg-white hover:bg-gray-50"
                                                 >
                                                     Edit
                                                 </button>
@@ -203,27 +226,27 @@ export default function Dashboard() {
                                     </div>
                                 ))}
                             </div>
-                        </div>
 
-                        {hasMultipleSlides && (
-                            <div className="flex justify-center mt-8 space-x-4">
-                                <button
-                                    onClick={prevSlide}
-                                    className="bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg shadow transition-colors duration-200"
-                                >
-                                    ← Previous
-                                </button>
-                                <button
-                                    onClick={nextSlide}
-                                    className="bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg shadow transition-colors duration-200"
-                                >
-                                    Next →
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                )}
-            </div>
+                            {hasMultipleSlides && (
+                                <div className="flex justify-center mt-12 space-x-4">
+                                    <button
+                                        onClick={prevSlide}
+                                        className="bg-white hover:bg-gray-50 text-gray-700 px-6 py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 font-medium border border-gray-200"
+                                    >
+                                        ← Previous
+                                    </button>
+                                    <button
+                                        onClick={nextSlide}
+                                        className="bg-white hover:bg-gray-50 text-gray-700 px-6 py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 font-medium border border-gray-200"
+                                    >
+                                        Next →
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </section>
         </div>
     );
 }
