@@ -65,49 +65,50 @@ export default function ProjectFormPage() {
     }
   };
 
-  const onSubmit = async (e) => {
-    e.preventDefault();
-    if (!canSubmit) return;
+    const onSubmit = async (e) => {
+      e.preventDefault();
+      if (!canSubmit) return;
 
-    const formData = new FormData();
-    formData.append("title", title.trim());
-    formData.append("dueDate", dueDate);
-    formData.append("description", description || "");
+      const formData = new FormData();
+      formData.append("title", title.trim());
+      formData.append("dueDate", dueDate);
+      formData.append("description", description.trim());
+      formData.append(
+          "steps",
+          JSON.stringify(
+              steps
+                  .filter((s) => s.title.trim())
+                  .map((s, idx) => ({
+                    id: idx + 1,
+                    title: s.title.trim(),
+                    description: "",
+                    dueDate: null,
+                    subtasks: [],
+                  }))
+          )
+      );
 
-    const filteredSteps = steps
-        .filter((s) => s.title.trim())
-        .map((s, idx) => ({
-          id: idx + 1,
-          title: s.title.trim(),
-          completed: false
-        }));
+      if (fileInputRef.current?.files[0]) {
+        formData.append("image", fileInputRef.current.files[0]);
+      }
 
-    if (filteredSteps.length) {
-      formData.append("steps", JSON.stringify(filteredSteps));
-    }
+      try {
+        const res = await fetch("http://localhost:8000/api/v1/projects", {
+          method: "POST",
+          body: formData,
+        });
 
-    if (fileInputRef.current?.files[0]) {
-      formData.append("image", fileInputRef.current.files[0]);
-    }
-    const token = localStorage.getItem("authToken");
-    try {
-      const res = await fetch("http://localhost:8000/api/v1/projects", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`
-        },
-        body: formData
-      });
+        if (!res.ok) {
+          throw new Error("Failed to create project");
+        }
 
-      if (!res.ok) throw new Error("Failed to create project");
-
-      const newProject = await res.json();
-      navigate(`/project/${newProject._id}`);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to create project");
-    }
-  };
+        const newProject = await res.json();
+        navigate(`/project/${newProject._id}`);
+      } catch (err) {
+        console.error(err);
+        alert("Failed to create project");
+      }
+    };
 
   return (
       <div className="max-w-2xl mx-auto p-4 bg-gray-50 border border-gray-200 rounded-xl shadow-sm">
