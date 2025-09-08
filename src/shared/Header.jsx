@@ -7,6 +7,7 @@ export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
 
+    const isHomePage = location.pathname === "/";
   const isDashboardPage = location.pathname === "/dashboard";
 
   return (
@@ -17,6 +18,7 @@ export default function Header() {
       </Link>
 
       {/* Navigation menu */}
+        {!isHomePage && (
       <nav className="flex gap-4 text-indigo-600 font-medium">
         <Link to="/" className="hover:text-indigo-800 transition">
           Home
@@ -27,6 +29,7 @@ export default function Header() {
           </Link>
         )}
       </nav>
+        )}
 
       {/* Title in the center */}
       <h1 className="flex-grow text-center text-lg md:text-xl font-bold text-gray-800">
