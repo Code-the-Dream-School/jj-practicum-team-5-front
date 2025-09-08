@@ -1,33 +1,37 @@
-import { Link, useLocation } from "react-router-dom";
-import React from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useContext } from "react";
+import { AuthContext } from "../contexts/AuthContext";
 
 export default function Header() {
+    const { isAuthenticated, logout } = useContext(AuthContext);
+    const navigate = useNavigate();
     const location = useLocation();
 
-    const isHome = location.pathname === "/";
-    const isLogin = location.pathname === "/login";
+    const isDashboardPage = location.pathname === "/dashboard";
 
     return (
-        <header
-            style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "1rem 2rem",
-                backgroundColor: "#f0f0f0",
-                borderBottom: "1px solid #ccc"
-            }}
-        >
+        <header style={{ display: "flex", justifyContent: "space-between", padding: "1rem 2rem", borderBottom: "1px solid #ccc" }}>
             <nav style={{ display: "flex", gap: "1rem" }}>
-                {!isHome && <Link to="/">Home</Link>}
-                {!isLogin && <Link to="/login">Login</Link>}
+                <Link to="/">Home</Link>
+                {isAuthenticated && !isDashboardPage && <Link to="/dashboard">Dashboard</Link>}
             </nav>
 
-            <h1 style={{ margin: 0, flexGrow: 1, textAlign: "center" }}>
-                Project Management System
-            </h1>
+            <h1 style={{ margin: 0, flexGrow: 1, textAlign: "center" }}>Project Management System</h1>
 
-            <div style={{ width: "100px" }}></div>
+            <div>
+                {isAuthenticated ? (
+                    <button
+                        onClick={() => {
+                            logout();
+                            navigate("/login");
+                        }}
+                    >
+                        Log Out
+                    </button>
+                ) : (
+                    <Link to="/login">Login</Link>
+                )}
+            </div>
         </header>
     );
 }

@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Timeline from "../components/TimeLine.jsx";
+
 import EditProject from "../components/EditProject.jsx";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function ProjectsSliderPage() {
+
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -13,12 +15,14 @@ export default function ProjectsSliderPage() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedProject, setSelectedProject] = useState(null);
 
+
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchProjects = async () => {
             try {
                 setLoading(true);
+
                 const isAuthenticated = localStorage.getItem("isAuthenticated");
                 if (isAuthenticated !== 'true') {
                     navigate("/login");
@@ -38,17 +42,21 @@ export default function ProjectsSliderPage() {
 
                 const data = await response.json();
                 setProjects(data.projects || []);
+
             } catch (err) {
+                console.error("Error fetching projects:", err);
                 setError(err.message);
             } finally {
                 setLoading(false);
             }
         };
+
         fetchProjects();
     }, [navigate]);
 
     if (loading) return <div>Loading projects...</div>;
     if (error) return <div className="text-red-600">Error: {error}</div>;
+
 
     return (
         <div className="min-h-screen bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 py-12">
@@ -83,6 +91,7 @@ export default function ProjectsSliderPage() {
                     onClose={() => setIsEditModalOpen(false)}
                     onSave={() => {}}
                 />
+
             </div>
         </div>
     );
