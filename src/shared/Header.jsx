@@ -2,41 +2,83 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../contexts/AuthContext";
 
-export default function Header() {
+export default function Header({
+  leftLogoSize = 95, // 👈 новый проп для левого логотипа
+  logoSize = 160,
+  logoOffset = -60,
+  titleOffset = 40,
+  titleSize = 100,
+}) {
   const { isAuthenticated, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
 
-    const isHomePage = location.pathname === "/";
   const isDashboardPage = location.pathname === "/dashboard";
 
+  // Links: custom deep violet (#3C0032), font +10%
+  const linkStyle = "font-semibold text-[#3C0032] text-lg hover:text-[#5A004C]";
+
   return (
-    <header className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 border-b border-gray-300 bg-white shadow-sm">
-      {/* Logo on the left */}
+    <header
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        padding: "1rem 2rem",
+        borderBottom: "1px solid #ccc",
+        alignItems: "center",
+        position: "relative", // needed for absolute positioning
+        height: "80px", // fixed header height
+      }}
+    >
+      {/* Left logo (добавлено) */}
       <Link to="/" className="flex items-center">
-        <img src="/images/logo.png" alt="App Logo" className="h-20 w-auto" />
+        <img
+          src="/images/logo.png"
+          alt="App Logo"
+          style={{ height: `${leftLogoSize}px`, width: "auto" }}
+        />
       </Link>
 
-      {/* Navigation menu */}
-        {!isHomePage && (
-      <nav className="flex gap-4 text-indigo-600 font-medium">
-        <Link to="/" className="hover:text-indigo-800 transition">
+      {/* Left navigation */}
+      <nav style={{ display: "flex", gap: "1rem" }}>
+        <Link to="/" className={linkStyle}>
           Home
         </Link>
         {isAuthenticated && !isDashboardPage && (
-          <Link to="/dashboard" className="hover:text-indigo-800 transition">
+          <Link to="/dashboard" className={linkStyle}>
             Dashboard
           </Link>
         )}
       </nav>
-        )}
 
-      {/* Title in the center */}
-      <h1 className="flex-grow text-center text-lg md:text-xl font-bold text-gray-800">
-        Project Management System
-      </h1>
+      {/* Center logo + title */}
+      <div style={{ textAlign: "center", flexGrow: 1, position: "relative" }}>
+        <img
+          src="/images/MycelFlow.png"
+          alt="MycelFlow logo"
+          style={{
+            height: `${logoSize}px`,
+            position: "absolute",
+            top: `${logoOffset}px`, // controlled by prop
+            left: "50%",
+            transform: "translateX(-50%)",
+            pointerEvents: "none",
+          }}
+        />
+        <h1
+          className="font-bold"
+          style={{
+            margin: 0,
+            marginTop: `${titleOffset}px`, // controlled by prop
+            color: "#333C00",
+            fontSize: `${titleSize}%`, // controlled by prop
+          }}
+        >
+          Project Management System
+        </h1>
+      </div>
 
-      {/* Authentication controls on the right */}
+      {/* Right navigation */}
       <div>
         {isAuthenticated ? (
           <button
@@ -44,15 +86,12 @@ export default function Header() {
               logout();
               navigate("/login");
             }}
-            className="text-red-600 hover:text-red-800 font-medium transition"
+            className={linkStyle}
           >
             Log Out
           </button>
         ) : (
-          <Link
-            to="/login"
-            className="text-indigo-600 hover:text-indigo-800 font-medium transition"
-          >
+          <Link to="/login" className={linkStyle}>
             Login
           </Link>
         )}
