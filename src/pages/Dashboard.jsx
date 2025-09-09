@@ -15,7 +15,9 @@ const getStatusColor = (status) => {
         case "completed":
             return "bg-green-100 text-green-800 border border-green-200";
         case "in progress":
-            return "bg-blue-100 text-blue-800 border border-blue-200";
+            return "text-white border border-opacity-20"
+                + " " + "border-white"
+                + " " + "bg-gradient-to-r from-blue-600 to-purple-600";
         case "not started":
             return "bg-purple-100 text-purple-800 border border-purple-200";
         case "overdue":
@@ -25,12 +27,15 @@ const getStatusColor = (status) => {
     }
 };
 
-const StatBlock = ({ label, count }) => (
-    <div className="bg-white rounded-2xl p-6 text-center shadow-lg">
-        <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+const StatBlock = ({ label, count, gradient }) => (
+    <div className="bg-white bg-opacity-90 rounded-2xl p-6 text-center shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-200">
+        <div
+            className="text-3xl font-bold mb-2"
+            style={{ color: gradient }}
+        >
             {count}
         </div>
-        <div className="text-gray-600 text-sm">{label}</div>
+        <div className="text-gray-600 text-sm font-medium">{label}</div>
     </div>
 );
 
@@ -90,9 +95,19 @@ export default function Dashboard() {
 
     if (loading)
         return (
-            <div className="min-h-screen bg-blue-200 flex items-center justify-center">
-                <div className="text-center bg-white rounded-2xl p-8 shadow-xl border border-gray-200">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <div className="min-h-screen flex items-center justify-center"
+                 style={{
+                     background: `
+                       linear-gradient(to bottom,
+                         rgba(171, 212, 246, 1) 0%,
+                         rgba(171, 212, 246, 0.7) 60%,
+                         rgba(171, 212, 246, 0.3) 100%
+                       )
+                     `,
+                 }}>
+                <div className="text-center bg-white bg-opacity-90 rounded-2xl p-8 shadow-xl border border-gray-200">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4"
+                         style={{ borderColor: "#008096" }}></div>
                     <p className="text-gray-700 font-medium">Loading projects...</p>
                 </div>
             </div>
@@ -100,13 +115,25 @@ export default function Dashboard() {
 
     if (error)
         return (
-            <div className="min-h-screen bg-blue-200 flex items-center justify-center">
-                <div className="bg-white rounded-2xl p-8 shadow-xl border border-gray-200 max-w-md text-center text-red-600">
+            <div className="min-h-screen flex items-center justify-center"
+                 style={{
+                     background: `
+                       linear-gradient(to bottom,
+                         rgba(171, 212, 246, 1) 0%,
+                         rgba(171, 212, 246, 0.7) 60%,
+                         rgba(171, 212, 246, 0.3) 100%
+                       )
+                     `,
+                 }}>
+                <div className="bg-white bg-opacity-90 rounded-2xl p-8 shadow-xl border border-gray-200 max-w-md text-center text-red-600">
                     <h2 className="text-xl font-bold mb-2">Error</h2>
                     <p className="text-gray-700 mb-4">{error}</p>
                     <button
                         onClick={() => window.location.reload()}
-                        className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                        className="text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                        style={{
+                            background: "linear-gradient(to right, #008096, #96007E)",
+                        }}
                     >
                         Try Again
                     </button>
@@ -115,151 +142,211 @@ export default function Dashboard() {
         );
 
     return (
-        <div className="min-h-screen bg-blue-200">
-            {/* Header */}
-            <section className="relative py-12">
-                <div className="max-w-7xl mx-auto px-4 text-center">
-                    <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Event Projects</h1>
-                    <p className="text-lg text-gray-700 mb-8 max-w-2xl mx-auto">
-                        Manage and track all your event projects in one place
-                    </p>
-                    <button
-                        onClick={() => navigate("/projects/new")}
-                        className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                    >
-                        Add New Project
-                    </button>
+        <div className="min-h-screen">
+            {/* Hero section with gradient blue strip background */}
+            <section className="relative overflow-hidden">
+                <div
+                    className="absolute inset-0"
+                    style={{
+                        background: `
+                          linear-gradient(to bottom,
+                            rgba(171, 212, 246, 1) 0%,
+                            rgba(171, 212, 246, 0.9) 60%,
+                            rgba(171, 212, 246, 0.5) 80%,
+                            rgba(171, 212, 246, 0) 100%
+                          )
+                        `,
+                    }}
+                />
+                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 z-10">
+                    <div className="text-center">
+                        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
+                            Event
+                            <span className="block" style={{ color: "#007A8E" }}>
+                                Projects
+                            </span>
+                        </h1>
+                        <p className="text-xl text-gray-700 mb-8 max-w-2xl mx-auto leading-relaxed">
+                            Manage and track all your event projects in one place
+                        </p>
+                        <button
+                            onClick={() => navigate("/projects/new")}
+                            className="inline-flex items-center px-8 py-4 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                            style={{
+                                background: "linear-gradient(to right, #008096, #96007E)",
+                            }}
+                        >
+                            Add New Project
+                        </button>
+                    </div>
                 </div>
             </section>
 
-            {/* Projects */}
-            <section className="py-12 bg-gradient-to-r from-gray-50 to-blue-50">
-                <div className="max-w-7xl mx-auto px-4 relative">
-                    {projects.length === 0 ? (
-                        <div className="text-center py-12">
-                            <div className="bg-white rounded-2xl p-8 shadow-xl max-w-md mx-auto border border-gray-200">
-                                <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-                                    <span className="text-white text-3xl">📋</span>
-                                </div>
-                                <h3 className="text-xl font-bold text-gray-900 mb-4">No Projects Yet</h3>
-                                <p className="text-gray-600 mb-6 leading-relaxed">
-                                    Start by creating your first event project and begin organizing your tasks efficiently
-                                </p>
-                                <button
-                                    onClick={() => navigate("/projects/new")}
-                                    className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                                >
-                                    Create First Project
-                                </button>
-                            </div>
-                        </div>
-                    ) : (
-                        <>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                {visibleProjects.map((project) => (
+            {/* Projects section with mycelium background */}
+            <section className="relative">
+                {/* Background with fade effect */}
+                <div className="absolute inset-0">
+                    <div
+                        className="absolute inset-0"
+                        style={{
+                            backgroundImage: `
+                                linear-gradient(to top,
+                                    rgba(255,255,255,0) 10%,
+                                    rgba(255,255,255,1) 100%
+                                ),
+                                url('/images/mycelium.webp')`,
+                            backgroundSize: "cover",
+                            backgroundPosition: "center",
+                        }}
+                    />
+                </div>
+
+                <div className="relative z-10 py-12">
+                    <div className="max-w-7xl mx-auto px-4 relative">
+                        {projects.length === 0 ? (
+                            <div className="text-center py-12">
+                                <div className="bg-white bg-opacity-90 rounded-2xl p-8 shadow-xl max-w-md mx-auto border border-gray-200">
                                     <div
-                                        key={project._id}
-                                        className="bg-white rounded-2xl p-8 shadow-xl border border-gray-200 transform transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 flex flex-col h-full"
+                                        className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg"
+                                        style={{ backgroundColor: "#004C5A" }}
                                     >
-                                        {project.image && (
-                                            <div className="mb-6 -mx-8 -mt-8">
-                                                <img
-                                                    src={`${API_URL}${project.image}`}
-                                                    alt={project.title}
-                                                    className="w-full h-48 object-cover rounded-t-2xl"
-                                                    onError={(e) => (e.target.style.display = "none")}
-                                                />
-                                            </div>
-                                        )}
-                                        <span className={`px-4 py-2 rounded-full text-xs font-semibold ${getStatusColor(project.status)}`}>
-                      {project.status}
-                    </span>
-                                        <h3 className="text-xl font-bold text-gray-900 mb-3 mt-4">{project.title}</h3>
-                                        <p className="text-gray-600 mb-4 leading-relaxed flex-grow">{project.description || ""}</p>
-
-                                        <div className="mb-4 flex justify-between items-center bg-blue-100 px-3 py-2 rounded-lg border border-blue-300">
-                                            <span className="text-blue-800 font-semibold text-sm">Due Date:</span>
-                                            <span className="text-blue-900 font-bold">{formatDate(project.date)}</span>
-                                        </div>
-
-                                        {project.steps?.length > 0 && (
-                                            <div className="mb-4 max-h-40 overflow-auto">
-                                                <Timeline steps={project.steps} />
-                                            </div>
-                                        )}
-
-                                        <div className="flex space-x-3 mt-auto">
-                                            <button
-                                                onClick={() => navigate(`/project/${project._id}`)}
-                                                className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg"
-                                            >
-                                                View Details
-                                            </button>
-                                            <button
-                                                onClick={() => navigate(`/project/${project._id}`)}
-                                                className="px-6 py-3 border-2 border-gray-400 text-gray-700 rounded-xl font-semibold hover:border-gray-500 hover:text-gray-900 transition-all duration-200 bg-white hover:bg-gray-50"
-                                            >
-                                                Edit
-                                            </button>
-                                        </div>
+                                        <span className="text-white text-3xl">📋</span>
                                     </div>
-                                ))}
+                                    <h3 className="text-xl font-bold text-gray-900 mb-4">No Projects Yet</h3>
+                                    <p className="text-gray-600 mb-6 leading-relaxed">
+                                        Start by creating your first event project and begin organizing your tasks efficiently
+                                    </p>
+                                    <button
+                                        onClick={() => navigate("/projects/new")}
+                                        className="inline-flex items-center px-8 py-4 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                                        style={{
+                                            background: "linear-gradient(to right, #008096, #96007E)",
+                                        }}
+                                    >
+                                        Create First Project
+                                    </button>
+                                </div>
                             </div>
+                        ) : (
+                            <>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                    {visibleProjects.map((project) => (
+                                        <div
+                                            key={project._id}
+                                            className="bg-white bg-opacity-90 rounded-2xl p-8 shadow-xl border border-gray-200 transform transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 flex flex-col h-full hover:bg-gray-100"
+                                        >
+                                            {project.image && (
+                                                <div className="mb-6 -mx-8 -mt-8">
+                                                    <img
+                                                        src={`${API_URL}${project.image}`}
+                                                        alt={project.title}
+                                                        className="w-full h-48 object-cover rounded-t-2xl"
+                                                        onError={(e) => (e.target.style.display = "none")}
+                                                    />
+                                                </div>
+                                            )}
+                                            <span className={`px-4 py-2 rounded-full text-xs font-semibold ${getStatusColor(project.status)}`}>
+                                                {project.status}
+                                            </span>
+                                            <h3 className="text-xl font-bold text-gray-900 mb-3 mt-4">{project.title}</h3>
+                                            <p className="text-gray-600 mb-4 leading-relaxed flex-grow">{project.description || ""}</p>
 
-                            {/* Slider Arrows */}
-                            {projects.length > 3 && (
-                                <>
-                                    <button
-                                        onClick={prevSlide}
-                                        className="absolute -left-12 top-1/2 transform -translate-y-1/2 bg-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 border border-gray-400"
-                                        disabled={projects.length <= 3}
-                                    >
-                                        <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                                        </svg>
-                                    </button>
+                                            <div
+                                                className="mb-4 flex justify-between items-center px-3 py-2 rounded-lg border"
+                                                style={{
+                                                    backgroundColor: "rgba(171, 212, 246, 0.3)",
+                                                    borderColor: "#007A8E"
+                                                }}
+                                            >
+                                                <span className="font-semibold text-sm" style={{ color: "#007A8E" }}>Due Date:</span>
+                                                <span className="font-bold" style={{ color: "#004C5A" }}>{formatDate(project.date)}</span>
+                                            </div>
 
-                                    <button
-                                        onClick={nextSlide}
-                                        className="absolute -right-12 top-1/2 transform -translate-y-1/2 bg-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 border border-gray-400"
-                                        disabled={projects.length <= 3}
-                                    >
-                                        <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                        </svg>
-                                    </button>
-                                </>
-                            )}
+                                            {project.steps?.length > 0 && (
+                                                <div className="mb-4 max-h-40 overflow-auto">
+                                                    <Timeline steps={project.steps} />
+                                                </div>
+                                            )}
 
-                            {/* Slider Dots */}
-                            {Math.ceil(projects.length / 3) > 1 && (
-                                <div className="flex justify-center mt-6 space-x-2">
-                                    {Array.from({ length: Math.ceil(projects.length / 3) }).map((_, index) => (
-                                        <button
-                                            key={index}
-                                            onClick={() => setCurrentSlide(index)}
-                                            className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                                                currentSlide === index
-                                                    ? "bg-gradient-to-r from-blue-600 to-purple-600"
-                                                    : "bg-gray-300 hover:bg-gray-400"
-                                            }`}
-                                        />
+                                            <div className="flex space-x-3 mt-auto">
+                                                <button
+                                                    onClick={() => navigate(`/project/${project._id}`)}
+                                                    className="flex-1 text-white py-3 px-6 rounded-xl font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-1"
+                                                    style={{
+                                                        background: "linear-gradient(to right, #008096, #96007E)",
+                                                    }}
+                                                >
+                                                    View Details
+                                                </button>
+                                                <button
+                                                    onClick={() => navigate(`/project/${project._id}`)}
+                                                    className="px-6 py-3 border-2 text-gray-700 rounded-xl font-semibold transition-all duration-200 bg-white hover:bg-gray-50 hover:shadow-md"
+                                                    style={{ borderColor: "#007A8E" }}
+                                                >
+                                                    Edit
+                                                </button>
+                                            </div>
+                                        </div>
                                     ))}
                                 </div>
-                            )}
-                        </>
-                    )}
+
+                                {/* Slider Arrows */}
+                                {projects.length > 3 && (
+                                    <>
+                                        <button
+                                            onClick={prevSlide}
+                                            className="absolute -left-12 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-90 p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 border"
+                                            style={{ borderColor: "#007A8E" }}
+                                            disabled={projects.length <= 3}
+                                        >
+                                            <svg className="w-6 h-6" style={{ color: "#007A8E" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                            </svg>
+                                        </button>
+
+                                        <button
+                                            onClick={nextSlide}
+                                            className="absolute -right-12 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-90 p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 border"
+                                            style={{ borderColor: "#007A8E" }}
+                                            disabled={projects.length <= 3}
+                                        >
+                                            <svg className="w-6 h-6" style={{ color: "#007A8E" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </button>
+                                    </>
+                                )}
+
+                                {/* Slider Dots */}
+                                {Math.ceil(projects.length / 3) > 1 && (
+                                    <div className="flex justify-center mt-6 space-x-2">
+                                        {Array.from({ length: Math.ceil(projects.length / 3) }).map((_, index) => (
+                                            <button
+                                                key={index}
+                                                onClick={() => setCurrentSlide(index)}
+                                                className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                                                    currentSlide === index
+                                                        ? "bg-gradient-to-r from-blue-600 to-purple-600"
+                                                        : "bg-gray-300 hover:bg-gray-400"
+                                                }`}
+                                                style={currentSlide === index ? { background: "linear-gradient(to right, #008096, #96007E)" } : {}}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </div>
+
+                    {/* Statistics */}
+                    <div className="mt-16 max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <StatBlock label="Total Projects" count={stats.total} gradient="#B40098" />
+                        <StatBlock label="Completed" count={stats.completed} gradient="#4C5A00" />
+                        <StatBlock label="In Progress" count={stats.inProgress} gradient="#007A8E" />
+                        <StatBlock label="Overdue" count={stats.overdue} gradient="#5A004C" />
+                    </div>
                 </div>
             </section>
-
-            {/* Statistics */}
-            <div className="mt-16 max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-6">
-                <StatBlock label="Total Projects" count={stats.total} />
-                <StatBlock label="Completed" count={stats.completed} />
-                <StatBlock label="In Progress" count={stats.inProgress} />
-                <StatBlock label="Overdue" count={stats.overdue} />
-            </div>
         </div>
     );
 }
-
