@@ -40,16 +40,20 @@ export default function Header({
       </Link>
 
       {/* Left navigation */}
-      <nav style={{ display: "flex", gap: "1rem" }}>
-        <Link to="/" className={linkStyle}>
-          Home
-        </Link>
-        {isAuthenticated && !isDashboardPage && (
-          <Link to="/dashboard" className={linkStyle}>
-            Dashboard
-          </Link>
-        )}
-      </nav>
+        <nav style={{ display: "flex", gap: "1rem" }}>
+            {isAuthenticated && (
+                <>
+                    <Link to="/" className={linkStyle}>
+                        Home
+                    </Link>
+                    {!isDashboardPage && (
+                        <Link to="/dashboard" className={linkStyle}>
+                            Dashboard
+                        </Link>
+                    )}
+                </>
+            )}
+        </nav>
 
       {/* Center logo + title */}
       <div style={{ textAlign: "center", flexGrow: 1, position: "relative" }}>
