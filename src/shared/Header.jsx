@@ -2,7 +2,12 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../contexts/AuthContext";
 
-export default function Header() {
+export default function Header({
+  logoSize = 160,
+  logoOffset = -60,
+  titleOffset = 40,
+  titleSize = 100,
+}) {
   const { isAuthenticated, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
@@ -20,6 +25,8 @@ export default function Header() {
         padding: "1rem 2rem",
         borderBottom: "1px solid #ccc",
         alignItems: "center",
+        position: "relative", // needed for absolute positioning
+        height: "80px", // fixed header height
       }}
     >
       {/* Left navigation */}
@@ -34,19 +41,32 @@ export default function Header() {
         )}
       </nav>
 
-      {/* Center title */}
-      <h1
-        className="font-bold"
-        style={{
-          margin: 0,
-          flexGrow: 1,
-          textAlign: "center",
-          color: "#333C00",
-          fontSize: "130%", // +30% bigger
-        }}
-      >
-        Project Management System
-      </h1>
+      {/* Center logo + title */}
+      <div style={{ textAlign: "center", flexGrow: 1, position: "relative" }}>
+        <img
+          src="/images/MycelFlow.png"
+          alt="MycelFlow logo"
+          style={{
+            height: `${logoSize}px`,
+            position: "absolute",
+            top: `${logoOffset}px`, // controlled by prop
+            left: "50%",
+            transform: "translateX(-50%)",
+            pointerEvents: "none",
+          }}
+        />
+        <h1
+          className="font-bold"
+          style={{
+            margin: 0,
+            marginTop: `${titleOffset}px`, // controlled by prop
+            color: "#333C00",
+            fontSize: `${titleSize}%`, // controlled by prop
+          }}
+        >
+          Project Management System
+        </h1>
+      </div>
 
       {/* Right navigation */}
       <div>
