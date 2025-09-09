@@ -3,6 +3,7 @@ import { useContext } from "react";
 import { AuthContext } from "../contexts/AuthContext";
 
 export default function Header({
+  leftLogoSize = 95, // 👈 новый проп для левого логотипа
   logoSize = 160,
   logoOffset = -60,
   titleOffset = 40,
@@ -29,6 +30,15 @@ export default function Header({
         height: "80px", // fixed header height
       }}
     >
+      {/* Left logo (добавлено) */}
+      <Link to="/" className="flex items-center">
+        <img
+          src="/images/logo.png"
+          alt="App Logo"
+          style={{ height: `${leftLogoSize}px`, width: "auto" }}
+        />
+      </Link>
+
       {/* Left navigation */}
       <nav style={{ display: "flex", gap: "1rem" }}>
         <Link to="/" className={linkStyle}>
