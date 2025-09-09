@@ -2,6 +2,10 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../contexts/AuthContext";
 
+export default function Header() {
+  const { isAuthenticated, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const location = useLocation();
 export default function Header({
   logoSize = 160,
   logoOffset = -60,
