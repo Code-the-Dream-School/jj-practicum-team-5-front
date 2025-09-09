@@ -1,12 +1,25 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-export default function HomePage() {
+export default function HomePage({ fadeStart = 10 }) {
   return (
     <div className="h-screen">
-      {/* Hero section (прозрачный фон) */}
-      <section className="relative overflow-hidden bg-transparent z-20">
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 z-30">
+      {/* Hero section with gradient blue strip background */}
+      <section className="relative overflow-hidden">
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `
+              linear-gradient(to bottom,
+                rgba(171, 212, 246, 1) 0%,
+                rgba(171, 212, 246, 0.9) 60%,
+                rgba(171, 212, 246, 0.5) 80%,
+                rgba(171, 212, 246, 0) 100%
+              )
+            `,
+          }}
+        />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 z-10">
           <div className="text-center">
             <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
               Manage Projects
@@ -18,8 +31,7 @@ export default function HomePage() {
               Modern project management system that helps your team achieve
               goals faster and more organized
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-30">
-              {/* Login button gradient */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-20">
               <Link
                 to="/login"
                 className="inline-flex items-center px-8 py-4 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
@@ -30,7 +42,6 @@ export default function HomePage() {
                 Login
               </Link>
 
-              {/* Registration button gradient */}
               <Link
                 to="/signup"
                 className="inline-flex items-center px-8 py-4 font-semibold rounded-xl transition-all duration-200 shadow-md hover:shadow-lg text-white"
@@ -45,20 +56,17 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Features + Why Choose wrapper with градиентным фоном */}
+      {/* Features + Why Choose Us wrapper with mycelium background */}
       <section className="relative">
-        {/* Background image: сверху прозрачный → снизу плотный */}
+        {/* Fade controlled by fadeStart prop */}
         <div className="absolute inset-0">
           <div
             className="absolute inset-0"
             style={{
               backgroundImage: `
-                linear-gradient(to bottom,
-                  rgba(255,255,255,1) 0%,
-                  rgba(255,255,255,0.85) 15%,
-                  rgba(255,255,255,0.6) 30%,
-                  rgba(255,255,255,0.3) 45%,
-                  rgba(255,255,255,0) 60%
+                linear-gradient(to top,
+                  rgba(255,255,255,0) ${fadeStart}%,
+                  rgba(255,255,255,1) 100%
                 ),
                 url('/images/mycelium.webp')`,
               backgroundSize: "cover",
@@ -170,7 +178,7 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                {/* Stats */}
+                {/* Stats box */}
                 <div className="lg:pl-8">
                   <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200 bg-opacity-90">
                     <div className="text-center">
@@ -201,7 +209,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CTA section (бирюзовый фон) */}
+      {/* CTA section */}
       <section className="py-12" style={{ backgroundColor: "#008096" }}>
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
