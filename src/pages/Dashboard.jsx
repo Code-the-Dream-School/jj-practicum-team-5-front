@@ -196,7 +196,7 @@ export default function Dashboard() {
                                                 View Details
                                             </button>
                                             <button
-                                                onClick={() => navigate(`/project/edit/${project._id}`)}
+                                                onClick={() => navigate(`/project/${project._id}`)}
                                                 className="px-6 py-3 border-2 border-gray-400 text-gray-700 rounded-xl font-semibold hover:border-gray-500 hover:text-gray-900 transition-all duration-200 bg-white hover:bg-gray-50"
                                             >
                                                 Edit
