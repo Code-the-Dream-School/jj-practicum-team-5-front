@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 import ProjectPage from "./pages/ProjectPage.jsx";
 import StepPage from "./pages/StepPage";
 import ProjectFormPage from "./pages/ProjectFormPage.jsx";
+import NotFound from "./pages/NotFound.jsx";
 import { AuthProvider } from './contexts/AuthContext';
 
 import "./index.css";
@@ -35,7 +36,7 @@ export default function App() {
               {/* Step route stays consistent with :projectId */}
               <Route path="/project/:projectId/step/:stepId" element={<StepPage />} />
 
-              <Route path="*" element={<div>Not Found</div>} />
+              <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
         </BrowserRouter>
