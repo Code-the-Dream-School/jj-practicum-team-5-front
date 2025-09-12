@@ -125,7 +125,7 @@ export default function ProjectFormPage() {
           {/* Header */}
           <div className="flex justify-between items-center mb-6">
             <Link
-                to="/project"
+                to="/dashboard"
                 className="px-4 py-2 text-white font-semibold rounded-lg shadow-md hover:shadow-lg"
                 style={{ background: "linear-gradient(to right, #008096, #96007E)" }}
             >
