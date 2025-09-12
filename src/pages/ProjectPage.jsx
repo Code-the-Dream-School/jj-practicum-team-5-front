@@ -8,12 +8,8 @@ import NewStepModal from "../components/NewStepModal";
 
 import { getDueInfo } from "../utils/due";
 import { derive, toVariant } from "../utils/derive";
-import {
-    projectsStore,
-    loadLegacySteps,
-    removeLegacySteps,
-    createProject,
-} from "../utils/projectsStore";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 export default function ProjectPage() {
     const { projectId } = useParams();
@@ -51,57 +47,79 @@ export default function ProjectPage() {
             }
             if (prev.length === 0) return [createProject()];
             return prev;
+
         });
-    }, [projectId]);
-
-    // Current project
-    const current = useMemo(() => {
-        if (projectId) return projects.find((p) => p.id === projectId) || null;
-        return projects[0] || null;
-    }, [projects, projectId]);
-
-    // Update current by id
-    const updateCurrentProject = (updater) => {
-        if (!current) return;
-        setProjects((prev) =>
-            prev.map((p) => (p.id === current.id ? updater(p) : p))
-        );
+        if (!res.ok) throw new Error("Failed to fetch project");
+        const data = await res.json();
+        setCurrent(data.project);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
     };
+    fetchProject();
+  }, [projectId]);
 
-    // Handlers
-    const onChangeDescription = (e) =>
-        updateCurrentProject((p) => ({ ...p, description: e.target.value }));
+  // Helper to update project both locally and on server
+  const updateCurrentProject = async (updates) => {
+    if (!current) return;
+    const token = localStorage.getItem("authToken");
 
-    const onChangeProjectDue = (value) =>
-        updateCurrentProject((p) => ({ ...p, dueDate: value || null }));
+    // Prepare updated project object
+    const updated = { ...current, ...updates };
 
-    const setStepDueDate = (stepId, value) =>
-        updateCurrentProject((p) => ({
-            ...p,
-            steps: (p.steps || []).map((s) =>
-                s.id === stepId ? { ...s, dueDate: value || null } : s
-            ),
-        }));
+    // Optimistic update (update UI immediately)
+    setCurrent(updated);
 
-    // Modal state & create handler
-    const [showNewStep, setShowNewStep] = useState(false);
+    try {
+      const res = await fetch(`${API_URL}/api/v1/projects/${current._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updated),
+      });
 
-    const createStepFromModal = ({ title, description, dueDate }) => {
-        if (!current) return;
-        const steps = current.steps || [];
-        const nextId = steps.length
-            ? Math.max(...steps.map((s) => Number(s.id) || 0)) + 1
-            : 1;
+      if (!res.ok) throw new Error("Failed to update project");
 
-        const newStep = {
-            id: nextId,
-            title: title || `New Step ${nextId}`,
-            description: description || "",
-            dueDate: dueDate || null,
-            subtasks: [],
-        };
+      // Sync state with server response
+      const data = await res.json();
+      setCurrent(data.data);
+    } catch (err) {
+      console.error("Update failed:", err);
+    }
+  };
 
-        updateCurrentProject((p) => ({ ...p, steps: [...steps, newStep] }));
+  // Handlers
+  const onChangeDescription = (e) =>
+    updateCurrentProject({ description: e.target.value });
+
+  const onChangeProjectDue = (value) =>
+    updateCurrentProject({ dueDate: value || null });
+
+  const setStepDueDate = (stepId, value) => {
+    const steps = (current.steps || []).map((s) =>
+      s.id === stepId ? { ...s, dueDate: value || null } : s
+    );
+    updateCurrentProject({ steps });
+  };
+
+  const createStepFromModal = ({ title, description, dueDate }) => {
+    if (!current) return;
+    const steps = current.steps || [];
+    const nextId = steps.length
+      ? Math.max(...steps.map((s) => Number(s.id) || 0)) + 1
+      : 1;
+
+    const newStep = {
+      id: nextId,
+      title: title || `New Step ${nextId}`,
+      description: description || "",
+      dueDate: dueDate || null,
+      completed: false,
+      subtasks: [],
     };
 
     // Handle back navigation
@@ -113,14 +131,42 @@ export default function ProjectPage() {
     const allStepsDone = useMemo(
         () => (current?.steps || []).every((s) => derive(s).progress === 100),
         [current?.steps]
-    );
-    const projectDueInfo = useMemo(
-        () => getDueInfo(current?.dueDate, allStepsDone),
-        [current?.dueDate, allStepsDone]
-    );
-    const projectOverdue = projectDueInfo?.overdue;
 
-    const isProjectNotFound = !current;
+    );
+  }
+  if (error) {
+    return (
+      <div className="p-6 text-center text-red-600">
+        Failed to load project: {error} <br />
+        <Link to="/dashboard" className="text-blue-600 underline">
+          Back to dashboard
+        </Link>
+      </div>
+    );
+  }
+  if (!current) {
+    return (
+      <div className="p-6 text-center">
+        Project not found. <Link to="/dashboard">Back</Link>
+      </div>
+    );
+  }
+
+  // UI
+  return (
+    <div className="max-w-2xl mx-auto p-4 bg-gray-50 border border-gray-200 rounded-xl shadow-sm">
+      {/* Header */}
+      <div className="flex justify-between items-center border-b border-gray-200 pb-3 mb-2">
+        <div>
+          <h1 className="text-2xl font-bold">
+            {current.title?.trim() || "Untitled project"}
+          </h1>
+          {current.createdAt && (
+            <div className="text-xs text-gray-500 mt-1">
+              Created {new Date(current.createdAt).toLocaleDateString()}
+            </div>
+          )}
+        </div>
 
     return (
         <div className="min-h-screen relative flex flex-col items-center p-6 bg-gray-100">

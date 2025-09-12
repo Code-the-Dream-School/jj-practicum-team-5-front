@@ -7,7 +7,8 @@ import DueBanner from "../components/DueBanner";
 
 import { getDueInfo } from "../utils/due";
 import { derive, toVariant } from "../utils/derive";
-import { projectsStore } from "../utils/projectsStore";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 export default function StepPage() {
     const { projectId, stepId: stepIdParam } = useParams(); // /project/:projectId/step/:stepId
@@ -304,6 +305,7 @@ export default function StepPage() {
                     </div>
                 </div>
             </section>
+
         </div>
     );
 }
