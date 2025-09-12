@@ -130,7 +130,7 @@ export default function Dashboard() {
                     <p className="text-gray-700 mb-4">{error}</p>
                     <button
                         onClick={() => window.location.reload()}
-                        className="text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                        className="text-white px-6 py-1 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                         style={{
                             background: "linear-gradient(to right, #008096, #96007E)",
                         }}
@@ -158,9 +158,9 @@ export default function Dashboard() {
                         `,
                     }}
                 />
-                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 z-10">
+                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 z-10">
                     <div className="text-center">
-                        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
+                        <h1 className="text-4xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
                             Event
                             <span className="block" style={{ color: "#007A8E" }}>
                                 Projects
@@ -201,19 +201,19 @@ export default function Dashboard() {
                     />
                 </div>
 
-                <div className="relative z-10 py-12">
+                <div className="relative z-10 py-4">
                     <div className="max-w-7xl mx-auto px-4 relative">
                         {projects.length === 0 ? (
-                            <div className="text-center py-12">
+                            <div className="text-center py-4">
                                 <div className="bg-white bg-opacity-90 rounded-2xl p-8 shadow-xl max-w-md mx-auto border border-gray-200">
                                     <div
-                                        className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg"
+                                        className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-2 shadow-lg"
                                         style={{ backgroundColor: "#004C5A" }}
                                     >
                                         <span className="text-white text-3xl">📋</span>
                                     </div>
-                                    <h3 className="text-xl font-bold text-gray-900 mb-4">No Projects Yet</h3>
-                                    <p className="text-gray-600 mb-6 leading-relaxed">
+                                    <h3 className="text-xl font-bold text-gray-900 mb-2">No Projects Yet</h3>
+                                    <p className="text-gray-600 mb-2 leading-relaxed">
                                         Start by creating your first event project and begin organizing your tasks efficiently
                                     </p>
                                     <button
@@ -233,10 +233,12 @@ export default function Dashboard() {
                                     {visibleProjects.map((project) => (
                                         <div
                                             key={project._id}
-                                            className="bg-white bg-opacity-90 rounded-2xl p-8 shadow-xl border border-gray-200 transform transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 flex flex-col h-full hover:bg-gray-100"
+                                            className="bg-white bg-opacity-90 rounded-2xl p-8 shadow-xl border border-gray-200 transform transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 flex flex-col hover:bg-gray-100"
+                                            style={{ height: "600px" }} // Фиксированная высота
                                         >
-                                            {project.image && (
-                                                <div className="mb-6 -mx-8 -mt-8">
+                                            {/* Изображение - фиксированная высота */}
+                                            {project.image ? (
+                                                <div className="mb-2 -mx-8 -mt-8 flex-shrink-0">
                                                     <img
                                                         src={`${API_URL}${project.image}`}
                                                         alt={project.title}
@@ -244,31 +246,56 @@ export default function Dashboard() {
                                                         onError={(e) => (e.target.style.display = "none")}
                                                     />
                                                 </div>
+                                            ) : (
+                                                <div className="mb-2 -mx-8 -mt-8 flex-shrink-0 h-48" /> // Пустое место для изображения
                                             )}
-                                            <span className={`px-4 py-2 rounded-full text-xs font-semibold ${getStatusColor(project.status)}`}>
-                                                {project.status}
-                                            </span>
-                                            <h3 className="text-xl font-bold text-gray-900 mb-3 mt-4">{project.title}</h3>
-                                            <p className="text-gray-600 mb-4 leading-relaxed flex-grow">{project.description || ""}</p>
 
+                                            {/* Статус - фиксированная высота */}
+                                            <div className="flex-shrink-0 mb-1">
+                                                <span className={`px-4 py-2 rounded-full text-xs font-semibold ${getStatusColor(project.status)}`}>
+                                                    {project.status}
+                                                </span>
+                                            </div>
+
+                                            {/* Заголовок - фиксированная высота */}
+                                            <h3 className="text-xl font-bold text-gray-900 mb-3 flex-shrink-0 h-7 overflow-hidden">
+                                                {project.title}
+                                            </h3>
+
+                                            {/* Описание - фиксированная высота */}
+                                            <div className="mb-4 flex-shrink-0" style={{ height: "48px" }}>
+                                                <p className="text-gray-600 leading-relaxed text-sm overflow-hidden">
+                                                    {project.description || "No description available"}
+                                                </p>
+                                            </div>
+
+                                            {/* Дата выполнения - фиксированная высота */}
                                             <div
-                                                className="mb-4 flex justify-between items-center px-3 py-2 rounded-lg border"
+                                                className="mb-4 flex justify-between items-center px-3 py-2 rounded-lg border flex-shrink-0"
                                                 style={{
                                                     backgroundColor: "rgba(171, 212, 246, 0.3)",
                                                     borderColor: "#007A8E"
                                                 }}
                                             >
                                                 <span className="font-semibold text-sm" style={{ color: "#007A8E" }}>Due Date:</span>
-                                                <span className="font-bold" style={{ color: "#004C5A" }}>{formatDate(project.date)}</span>
+                                                <span className="font-bold" style={{ color: "#004C5A" }}>{formatDate(project.dueDate)}</span>
                                             </div>
 
-                                            {project.steps?.length > 0 && (
-                                                <div className="mb-4 max-h-40 overflow-auto">
-                                                    <Timeline steps={project.steps} />
-                                                </div>
-                                            )}
+                                            {/* Timeline - фиксированная высота */}
+                                            <div className="mb-4 flex-shrink-0" style={{ height: "120px" }}>
+                                                {project.steps?.length > 0 ? (
+                                                    <div className="h-full overflow-auto">
+                                                        <Timeline steps={project.steps} />
+                                                    </div>
+                                                ) : (
+                                                    <div className="h-full flex items-center justify-center text-gray-400 text-sm">
+                                                        No steps defined
+                                                    </div>
+                                                )}
+                                            </div>
 
-                                            <div className="flex space-x-3 mt-auto">
+                                            {/* Кнопки - всегда внизу */}
+                                            <div className="flex space-x-3 mt-auto flex-shrink-0">
                                                 <button
                                                     onClick={() => navigate(`/project/${project._id}`)}
                                                     className="flex-1 text-white py-3 px-6 rounded-xl font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-1"

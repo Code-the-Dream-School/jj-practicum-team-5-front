@@ -10,211 +10,300 @@ import { derive, toVariant } from "../utils/derive";
 import { projectsStore } from "../utils/projectsStore";
 
 export default function StepPage() {
-  const { projectId, stepId: stepIdParam } = useParams(); // /project/:projectId/step/:stepId
-  const stepId = Number(stepIdParam);
+    const { projectId, stepId: stepIdParam } = useParams(); // /project/:projectId/step/:stepId
+    const stepId = Number(stepIdParam);
 
-  // Load all projects once
-  const [projects, setProjects] = useState(() => projectsStore.load());
+    // Load all projects once
+    const [projects, setProjects] = useState(() => projectsStore.load());
 
-  // Persist on change
-  useEffect(() => {
-    projectsStore.save(projects);
-  }, [projects]);
+    // Persist on change
+    useEffect(() => {
+        projectsStore.save(projects);
+    }, [projects]);
 
-  // Locate current project & step
-  const currentProject = useMemo(
-    () => projects.find((p) => p.id === projectId) || null,
-    [projects, projectId]
-  );
+    // Locate current project & step
+    const currentProject = useMemo(
+        () => projects.find((p) => p.id === projectId) || null,
+        [projects, projectId]
+    );
 
-  const step = useMemo(() => {
-    if (!currentProject) return null;
-    return (currentProject.steps || []).find((s) => s.id === stepId) || null;
-  }, [currentProject, stepId]);
+    const step = useMemo(() => {
+        if (!currentProject) return null;
+        return (currentProject.steps || []).find((s) => s.id === stepId) || null;
+    }, [currentProject, stepId]);
 
-  // Derived meta
-  const meta = useMemo(() => derive(step || {}), [step]);
-  const variant = toVariant(meta.status);
-  const stepDueInfo = getDueInfo(step?.dueDate, meta.progress === 100);
+    // Derived meta
+    const meta = useMemo(() => derive(step || {}), [step]);
+    const variant = toVariant(meta.status);
+    const stepDueInfo = getDueInfo(step?.dueDate, meta.progress === 100);
 
-  if (!currentProject || !step) {
+    if (!currentProject || !step) {
+        return (
+            <div className="min-h-screen relative overflow-hidden">
+                {/* Background with gradient */}
+                <div
+                    className="absolute inset-0"
+                    style={{
+                        background: `
+              linear-gradient(to bottom,
+                rgba(171, 212, 246, 1) 0%,
+                rgba(171, 212, 246, 0.9) 60%,
+                rgba(171, 212, 246, 0.5) 80%,
+                rgba(171, 212, 246, 0) 100%
+              )
+            `,
+                    }}
+                />
+                <div className="relative z-10 max-w-xl mx-auto p-8 pt-16">
+                    <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200 bg-opacity-95">
+                        <p className="mb-6 text-lg text-gray-700">
+                            {(!currentProject && "Project not found.") ||
+                                (!step && "Step not found.")}
+                        </p>
+                        <Link
+                            to={currentProject ? `/project/${currentProject.id}` : "/project"}
+                            className="inline-flex items-center px-6 py-3 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                            style={{
+                                background: "linear-gradient(to right, #008096, #96007E)",
+                            }}
+                        >
+                            ← Back to Project
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Update the step inside the current project and persist
+    const updateStep = (updater) => {
+        setProjects((prev) =>
+            prev.map((p) =>
+                p.id !== currentProject.id
+                    ? p
+                    : {
+                        ...p,
+                        steps: (p.steps || []).map((s) =>
+                            s.id === step.id ? updater(s) : s
+                        ),
+                    }
+            )
+        );
+    };
+
+    const setDescription = (val) =>
+        updateStep((s) => ({ ...s, description: val }));
+    const setDueDate = (val) =>
+        updateStep((s) => ({ ...s, dueDate: val || null })); // 'YYYY-MM-DD'
+
+    const toggleSubtask = (tid) =>
+        updateStep((s) => ({
+            ...s,
+            subtasks: (s.subtasks || []).map((t) =>
+                t.id === tid ? { ...t, done: !t.done } : t
+            ),
+        }));
+
+    const editSubtaskTitle = (tid, title) =>
+        updateStep((s) => ({
+            ...s,
+            subtasks: (s.subtasks || []).map((t) =>
+                t.id === tid ? { ...t, title } : t
+            ),
+        }));
+
+    const addSubtask = () =>
+        updateStep((s) => {
+            const list = s.subtasks || [];
+            const nextId =
+                list.length && typeof list[0]?.id === "number"
+                    ? Math.max(...list.map((t) => Number(t.id) || 0)) + 1
+                    : list.length + 1;
+            return {
+                ...s,
+                subtasks: [
+                    ...list,
+                    { id: nextId, title: `New item ${nextId}`, done: false },
+                ],
+            };
+        });
+
+    const removeSubtask = (tid) =>
+        updateStep((s) => ({
+            ...s,
+            subtasks: (s.subtasks || []).filter((t) => t.id !== tid),
+        }));
+
     return (
-      <div className="max-w-xl mx-auto p-4">
-        <p className="mb-3">
-          {(!currentProject && "Project not found.") ||
-            (!step && "Step not found.")}
-        </p>
-        <Link
-          to={currentProject ? `/project/${currentProject.id}` : "/project"}
-          className="text-blue-600 underline"
-        >
-          ← Back to Project
-        </Link>
-      </div>
-    );
-  }
+        <div className="min-h-screen relative overflow-hidden">
+            {/* Hero section with gradient background */}
+            <section className="relative overflow-hidden">
+                <div
+                    className="absolute inset-0"
+                    style={{
+                        background: `
+              linear-gradient(to bottom,
+                rgba(171, 212, 246, 1) 0%,
+                rgba(171, 212, 246, 0.9) 40%,
+                rgba(171, 212, 246, 0.5) 70%,
+                rgba(171, 212, 246, 0) 100%
+              )
+            `,
+                    }}
+                />
 
-  // Update the step inside the current project and persist
-  const updateStep = (updater) => {
-    setProjects((prev) =>
-      prev.map((p) =>
-        p.id !== currentProject.id
-          ? p
-          : {
-              ...p,
-              steps: (p.steps || []).map((s) =>
-                s.id === step.id ? updater(s) : s
-              ),
-            }
-      )
-    );
-  };
+                <div className="relative z-10 max-w-4xl mx-auto p-6 pt-8">
+                    {/* Header Card */}
+                    <div className="bg-white rounded-2xl shadow-xl p-6 mb-6 border border-gray-200 bg-opacity-95">
+                        <div className="flex items-center gap-4 border-b border-gray-200 pb-4 mb-4">
+                            <Link
+                                to={`/project/${currentProject.id}`}
+                                className="inline-flex items-center px-4 py-2 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-sm"
+                                style={{
+                                    background: "linear-gradient(to right, #008096, #96007E)",
+                                }}
+                            >
+                                ← Back to Project
+                            </Link>
+                            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex-1">
+                                Step: <span style={{ color: "#007A8E" }}>{step.title}</span>
+                            </h1>
+                            <div className="flex items-center gap-3">
+                                <Badge status={variant}>{meta.status}</Badge>
+                                <div className="text-right">
+                                    <div className="text-2xl font-bold" style={{ color: "#B40098" }}>
+                                        {meta.progress}%
+                                    </div>
+                                    <div className="text-xs text-gray-500">Complete</div>
+                                </div>
+                            </div>
+                        </div>
 
-  const setDescription = (val) =>
-    updateStep((s) => ({ ...s, description: val }));
-  const setDueDate = (val) =>
-    updateStep((s) => ({ ...s, dueDate: val || null })); // 'YYYY-MM-DD'
+                        {/* Due date warning banner */}
+                        <DueBanner
+                            dueInfo={stepDueInfo}
+                            text="Less than 24 hours to deadline!"
+                        />
+                    </div>
 
-  const toggleSubtask = (tid) =>
-    updateStep((s) => ({
-      ...s,
-      subtasks: (s.subtasks || []).map((t) =>
-        t.id === tid ? { ...t, done: !t.done } : t
-      ),
-    }));
+                    {/* Main Content Card */}
+                    <div className="bg-white rounded-2xl shadow-xl border border-gray-200 bg-opacity-95 overflow-hidden">
+                        <div className="p-6">
+                            {/* Description Section */}
+                            <div className="mb-6">
+                                <label htmlFor="step-desc" className="block text-lg font-semibold text-gray-900 mb-3">
+                                    Description
+                                </label>
+                                <textarea
+                                    id="step-desc"
+                                    className="w-full p-4 border border-gray-300 rounded-xl text-sm shadow-sm hover:shadow-md transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    placeholder="Describe this step in detail…"
+                                    value={step.description || ""}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    rows={4}
+                                />
+                            </div>
 
-  const editSubtaskTitle = (tid, title) =>
-    updateStep((s) => ({
-      ...s,
-      subtasks: (s.subtasks || []).map((t) =>
-        t.id === tid ? { ...t, title } : t
-      ),
-    }));
+                            {/* Due Date and Progress Grid */}
+                            <div className="grid md:grid-cols-2 gap-6 mb-6">
+                                {/* Due Date */}
+                                <div className="bg-gray-50 rounded-xl p-4">
+                                    <label htmlFor="due-date" className="block text-lg font-semibold text-gray-900 mb-3">
+                                        Due Date
+                                    </label>
+                                    <input
+                                        id="due-date"
+                                        type="date"
+                                        value={step.dueDate || ""}
+                                        onChange={(e) => setDueDate(e.target.value)}
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm hover:shadow-md transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
 
-  const addSubtask = () =>
-    updateStep((s) => {
-      const list = s.subtasks || [];
-      const nextId =
-        list.length && typeof list[0]?.id === "number"
-          ? Math.max(...list.map((t) => Number(t.id) || 0)) + 1
-          : list.length + 1;
-      return {
-        ...s,
-        subtasks: [
-          ...list,
-          { id: nextId, title: `New item ${nextId}`, done: false },
-        ],
-      };
-    });
+                                {/* Progress */}
+                                <div className="bg-gray-50 rounded-xl p-4">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div className="text-lg font-semibold text-gray-900">Progress</div>
+                                        <div className="text-sm text-gray-600 bg-white rounded-lg px-3 py-1 shadow-sm">
+                                            {meta.done}/{meta.total} tasks • {meta.progress}%
+                                        </div>
+                                    </div>
+                                    <ProgressBar status={variant} value={meta.progress} />
+                                </div>
+                            </div>
 
-  const removeSubtask = (tid) =>
-    updateStep((s) => ({
-      ...s,
-      subtasks: (s.subtasks || []).filter((t) => t.id !== tid),
-    }));
+                            {/* Subtasks Section */}
+                            <div className="border-t border-gray-200 pt-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h2 className="text-xl font-bold text-gray-900">
+                                        Subtasks
+                                    </h2>
+                                    <button
+                                        onClick={addSubtask}
+                                        className="inline-flex items-center px-4 py-2 font-semibold rounded-xl transition-all duration-200 shadow-md hover:shadow-lg text-white transform hover:-translate-y-1"
+                                        style={{
+                                            background: "linear-gradient(to right, #96007E, #809600)",
+                                        }}
+                                    >
+                                        + Add Subtask
+                                    </button>
+                                </div>
 
-  return (
-    <div className="max-w-xl mx-auto p-4 bg-gray-50 border border-gray-200 rounded-xl shadow-sm">
-      {/* Header */}
-      <div className="flex items-center gap-2 border border-gray-200 pb-3 mb-4">
-        <Link
-          to={`/project/${currentProject.id}`}
-          className="text-sm px-2 py-1 rounded hover:bg-gray-100"
-        >
-          ← Back
-        </Link>
-        <h1 className="text-xl font-semibold">Step: {step.title}</h1>
-        <div className="ml-auto flex items-center gap-2">
-          <Badge status={variant}>{meta.status}</Badge>
-          <span className="text-xs text-gray-500 w-12 text-right">
-            {meta.progress}%
-          </span>
+                                <div className="space-y-3">
+                                    {(step.subtasks || []).map((t, index) => (
+                                        <div
+                                            key={t.id}
+                                            className="flex items-center gap-4 p-4 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 transition-all duration-200 shadow-sm hover:shadow-md"
+                                        >
+                                            <div className="flex items-center">
+                        <span className="text-xs font-semibold text-gray-500 w-8">
+                          #{index + 1}
+                        </span>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={!!t.done}
+                                                    onChange={() => toggleSubtask(t.id)}
+                                                    className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                />
+                                            </div>
+                                            <input
+                                                className="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-2 shadow-sm hover:shadow-md transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                value={t.title}
+                                                onChange={(e) => editSubtaskTitle(t.id, e.target.value)}
+                                                placeholder="Enter subtask title..."
+                                            />
+                                            <button
+                                                onClick={() => removeSubtask(t.id)}
+                                                className="text-sm px-3 py-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-all duration-200 shadow-sm hover:shadow-md"
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                    ))}
+
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Stats Footer */}
+                        <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
+                            <div className="flex items-center justify-between text-sm text-gray-600">
+                                <div>
+                  <span className="font-semibold" style={{ color: "#008096" }}>
+                    {meta.done}
+                  </span> completed •
+                                    <span className="font-semibold" style={{ color: "#96007E" }}>
+                    {meta.total - meta.done}
+                  </span> remaining
+                                </div>
+                                <div className="text-xs">
+                                    Last updated: {new Date().toLocaleDateString()}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </div>
-      </div>
-
-      {/* <24h warning */}
-      <DueBanner
-        dueInfo={stepDueInfo}
-        text="less than 24 hours to the deadline"
-      />
-
-      {/* Description */}
-      <label htmlFor="step-desc" className="block text-sm text-gray-600 mb-1">
-        Description
-      </label>
-      <textarea
-        id="step-desc"
-        className="w-full p-3 border border-gray-300 rounded-lg text-sm"
-        placeholder="Describe this step…"
-        value={step.description || ""}
-        onChange={(e) => setDescription(e.target.value)}
-        rows={3}
-      />
-
-      {/* Due date */}
-      <div className="mt-4">
-        <label htmlFor="due-date" className="block text-sm text-gray-600 mb-1">
-          Due date
-        </label>
-        <input
-          id="due-date"
-          type="date"
-          value={step.dueDate || ""}
-          onChange={(e) => setDueDate(e.target.value)}
-          className="border border-gray-300 rounded px-2 py-1 text-sm"
-        />
-      </div>
-
-      {/* Progress */}
-      <div className="mt-4">
-        <div className="flex items-center justify-between mb-1">
-          <div className="text-sm text-gray-600">Progress</div>
-          <div className="text-xs text-gray-500">
-            {meta.done}/{meta.total} • {meta.progress}%
-          </div>
-        </div>
-        <ProgressBar status={variant} value={meta.progress} />
-      </div>
-
-      {/* Subtasks */}
-      <h2 className="mt-6 mb-2 text-sm font-semibold text-gray-700">
-        Subtasks
-      </h2>
-      <div className="space-y-2">
-        {(step.subtasks || []).map((t) => (
-          <div
-            key={t.id}
-            className="flex items-center gap-2 p-2 bg-white border border-gray-200 rounded-lg"
-          >
-            <input
-              type="checkbox"
-              checked={!!t.done}
-              onChange={() => toggleSubtask(t.id)}
-              className="h-4 w-4"
-            />
-            <input
-              className="flex-1 text-sm border border-gray-300 rounded px-2 py-1"
-              value={t.title}
-              onChange={(e) => editSubtaskTitle(t.id, e.target.value)}
-            />
-            <button
-              onClick={() => removeSubtask(t.id)}
-              className="text-xs px-2 py-1 rounded border border-gray-300 hover:bg-gray-100"
-            >
-              Delete
-            </button>
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-3">
-        <button
-          onClick={addSubtask}
-          className="text-sm px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-100"
-        >
-          + Add Subtask
-        </button>
-      </div>
-    </div>
-  );
+    );
 }

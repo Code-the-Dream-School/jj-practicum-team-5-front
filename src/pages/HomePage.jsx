@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 export default function HomePage({ fadeStart = 10 }) {
   return (
-    <div className="h-screen">
+    <div className="min-h-screen flex flex-col overflow-y-auto">
       {/* Hero section with gradient blue strip background */}
       <section className="relative overflow-hidden">
         <div
@@ -19,22 +19,22 @@ export default function HomePage({ fadeStart = 10 }) {
             `,
           }}
         />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 z-10">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 z-10">
           <div className="text-center">
-            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+            <h1 className="text-3xl md:text-3xl font-bold text-gray-900 mb-3 leading-tight">
               Manage Projects
               <span className="block" style={{ color: "#007A8E" }}>
                 Efficiently
               </span>
             </h1>
-            <p className="text-xl text-gray-700 mb-8 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-gray-700 mb-2 max-w-3xl mx-auto leading-relaxed">
               Modern project management system that helps your team achieve
               goals faster and more organized
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-20">
               <Link
                 to="/login"
-                className="inline-flex items-center px-8 py-4 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                className="inline-flex items-center px-8 py-2 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                 style={{
                   background: "linear-gradient(to right, #008096, #96007E)",
                 }}
@@ -44,7 +44,7 @@ export default function HomePage({ fadeStart = 10 }) {
 
               <Link
                 to="/signup"
-                className="inline-flex items-center px-8 py-4 font-semibold rounded-xl transition-all duration-200 shadow-md hover:shadow-lg text-white"
+                className="inline-flex items-center px-8 py-2 font-semibold rounded-xl transition-all duration-200 shadow-md hover:shadow-lg text-white"
                 style={{
                   background: "linear-gradient(to right, #96007E, #809600)",
                 }}
@@ -77,13 +77,13 @@ export default function HomePage({ fadeStart = 10 }) {
 
         <div className="relative z-10">
           {/* Features section */}
-          <div className="py-6">
+          <div className="py-2">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center mb-8">
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              <div className="text-center mb-2">
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
                   Everything You Need to Succeed
                 </h2>
-                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                <p className="text-lg text-gray-600 max-w-xl mx-auto">
                   Comprehensive project management solution with intuitive
                   interface
                 </p>
@@ -93,10 +93,10 @@ export default function HomePage({ fadeStart = 10 }) {
                 {/* Task Management */}
                 <div className="text-center p-8 rounded-2xl bg-white bg-opacity-90 hover:bg-gray-100 transition-all duration-200 shadow-md">
                   <div
-                    className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg"
+                    className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-2 shadow-lg"
                     style={{ backgroundColor: "#004C5A" }}
                   ></div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
                     Task Management
                   </h3>
                   <p className="text-gray-600 leading-relaxed">
@@ -106,12 +106,12 @@ export default function HomePage({ fadeStart = 10 }) {
                 </div>
 
                 {/* Team Collaboration */}
-                <div className="text-center p-8 rounded-2xl bg-white bg-opacity-90 hover:bg-gray-100 transition-all duration-200 shadow-md">
+                <div className="text-center p-4 rounded-2xl bg-white bg-opacity-90 hover:bg-gray-100 transition-all duration-200 shadow-md">
                   <div
-                    className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg"
+                    className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-2 shadow-lg"
                     style={{ backgroundColor: "#4C5A00" }}
                   ></div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
                     Team Collaboration
                   </h3>
                   <p className="text-gray-600 leading-relaxed">
@@ -121,12 +121,12 @@ export default function HomePage({ fadeStart = 10 }) {
                 </div>
 
                 {/* Project Planning */}
-                <div className="text-center p-8 rounded-2xl bg-white bg-opacity-90 hover:bg-gray-100 transition-all duration-200 shadow-md">
+                <div className="text-center p-4 rounded-2xl bg-white bg-opacity-90 hover:bg-gray-100 transition-all duration-200 shadow-md">
                   <div
-                    className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg"
+                    className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-2 shadow-lg"
                     style={{ backgroundColor: "#5A004C" }}
                   ></div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
                     Project Planning
                   </h3>
                   <p className="text-gray-600 leading-relaxed">
@@ -139,11 +139,11 @@ export default function HomePage({ fadeStart = 10 }) {
           </div>
 
           {/* Why Choose Us section */}
-          <div className="py-6">
+          <div className="py-3">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="grid lg:grid-cols-2 gap-12 items-center">
                 <div>
-                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+                  <h2 className="text-2xl md:text-4xl font-bold text-gray-900 mb-2">
                     Why Choose Our System?
                   </h2>
                   <div className="space-y-6">
@@ -180,7 +180,7 @@ export default function HomePage({ fadeStart = 10 }) {
 
                 {/* Stats box */}
                 <div className="lg:pl-8">
-                  <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200 bg-opacity-90">
+                  <div className="bg-white rounded-2xl shadow-xl p-2 border border-gray-200 bg-opacity-90">
                     <div className="text-center">
                       <div
                         className="text-4xl font-bold mb-2"
@@ -188,7 +188,7 @@ export default function HomePage({ fadeStart = 10 }) {
                       >
                         95%
                       </div>
-                      <p className="text-gray-600 mb-6">
+                      <p className="text-gray-600 mb-2">
                         increase in team efficiency
                       </p>
                       <div
@@ -210,15 +210,15 @@ export default function HomePage({ fadeStart = 10 }) {
       </section>
 
       {/* CTA section */}
-      <section className="py-12" style={{ backgroundColor: "#008096" }}>
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+      <section className="py-2" style={{ backgroundColor: "#008096" }}>
+        <div className="max-w-2xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+          <h2 className=" md:text-2xl font-bold text-white mb-2">
             Ready to Get Started?
           </h2>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               to="/login"
-              className="inline-flex items-center px-8 py-4 bg-white font-semibold rounded-xl hover:bg-gray-100 transition-all duration-200 shadow-lg hover:shadow-xl"
+              className="inline-flex items-center px-8 py-2 bg-white font-semibold rounded-xl hover:bg-gray-100 transition-all duration-200 shadow-lg hover:shadow-xl"
               style={{ color: "#008096" }}
             >
               Login
@@ -226,7 +226,7 @@ export default function HomePage({ fadeStart = 10 }) {
 
             <Link
               to="/signup"
-              className="inline-flex items-center px-8 py-4 font-semibold rounded-xl transition-all duration-200 bg-white hover:bg-gray-100 shadow-md"
+              className="inline-flex items-center px-8 py-2 font-semibold rounded-xl transition-all duration-200 bg-white hover:bg-gray-100 shadow-md"
               style={{ color: "#008096" }}
             >
               Registration Required

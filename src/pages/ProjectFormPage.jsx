@@ -1,6 +1,5 @@
 import React, { useMemo, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { projectsStore } from "../utils/projectsStore";
 
 const genId = () =>
     typeof crypto?.randomUUID === "function"
@@ -20,8 +19,8 @@ export default function ProjectFormPage() {
 
   // image state
   const [imageDataUrl, setImageDataUrl] = useState(null);
-  const [fileName, setFileName] = useState(""); // for custom label
-  const fileInputRef = useRef(null); // to reset native input
+  const [fileName, setFileName] = useState("");
+  const fileInputRef = useRef(null);
 
   const canSubmit = useMemo(() => title.trim() && dueDate, [title, dueDate]);
 
@@ -34,34 +33,29 @@ export default function ProjectFormPage() {
   const onChangeStep = (id, value) =>
       setSteps(steps.map((s) => (s.id === id ? { ...s, title: value } : s)));
 
-  // Custom file picker handler: hide native input, show our UI
   const onPickImage = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Optional sanity check for size (e.g., 3MB)
     const MAX_MB = 3;
     if (file.size > MAX_MB * 1024 * 1024) {
       alert(`Image is too large (> ${MAX_MB}MB).`);
-      // Reset the input
       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
 
     setFileName(file.name);
 
-    // Keep data URL in memory
     const reader = new FileReader();
     reader.onload = () => setImageDataUrl(String(reader.result));
     reader.readAsDataURL(file);
   };
 
-  // Allow clearing the chosen image entirely
   const onRemoveImage = () => {
     setImageDataUrl(null);
     setFileName("");
     if (fileInputRef.current) {
-      fileInputRef.current.value = ""; // clear native input state
+      fileInputRef.current.value = "";
     }
   };
 
@@ -79,7 +73,7 @@ export default function ProjectFormPage() {
         .map((s, idx) => ({
           id: idx + 1,
           title: s.title.trim(),
-          completed: false
+          completed: false,
         }));
 
     if (filteredSteps.length) {
@@ -89,14 +83,15 @@ export default function ProjectFormPage() {
     if (fileInputRef.current?.files[0]) {
       formData.append("image", fileInputRef.current.files[0]);
     }
+
     const token = localStorage.getItem("authToken");
     try {
       const res = await fetch("http://localhost:8000/api/v1/projects", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: formData
+        body: formData,
       });
 
       if (!res.ok) throw new Error("Failed to create project");
@@ -110,164 +105,175 @@ export default function ProjectFormPage() {
   };
 
   return (
-      <div className="max-w-2xl mx-auto p-4 bg-gray-50 border border-gray-200 rounded-xl shadow-sm">
-        <div className="flex items-center gap-2 border-b border-gray-200 pb-3 mb-4">
-          <Link
-              to="/project"
-              className="text-sm px-2 py-1 rounded hover:bg-gray-100"
-          >
-            ← Back
-          </Link>
-          <h1 className="text-xl font-semibold">Create Project</h1>
-        </div>
+      <div className="min-h-screen relative flex flex-col items-center p-6 bg-gray-100">
+        {/* Gradient background */}
+        <div
+            className="absolute inset-0"
+            style={{
+              background: `
+            linear-gradient(to bottom,
+              rgba(171, 212, 246, 1) 0%,
+              rgba(171, 212, 246, 0.9) 60%,
+              rgba(171, 212, 246, 0.5) 80%,
+              rgba(171, 212, 246, 0) 100%
+            )
+          `,
+            }}
+        />
 
-        <form onSubmit={onSubmit} className="space-y-6">
-          {/* Title (required) */}
-          <div>
-            <label htmlFor="p-title" className="block text-sm text-gray-600 mb-1">
-              Project title <span className="text-red-500">*</span>
-            </label>
-            <input
-                id="p-title"
-                type="text"
-                className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="My awesome project"
-                required
-            />
-          </div>
-
-          {/* Due date (required) */}
-          <div>
-            <label htmlFor="p-due" className="block text-sm text-gray-600 mb-1">
-              Project deadline <span className="text-red-500">*</span>
-            </label>
-            <input
-                id="p-due"
-                type="date"
-                className="border border-gray-300 rounded px-2 py-1 text-sm"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                required
-            />
-          </div>
-
-          {/* Description (optional) */}
-          <div>
-            <label htmlFor="p-desc" className="block text-sm text-gray-600 mb-1">
-              Description (optional)
-            </label>
-            <textarea
-                id="p-desc"
-                className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-                rows={3}
-                placeholder="Briefly describe the project…"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
-
-          {/* Initial steps (optional) */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-sm text-gray-600">
-                Initial steps (optional)
-              </label>
-              <button
-                  type="button"
-                  onClick={onAddStep}
-                  className="border border-gray-300 px-3 py-1.5 rounded text-xs hover:bg-gray-100"
-              >
-                + Add Step
-              </button>
-            </div>
-
-            <div className="space-y-2">
-              {steps.map((s) => (
-                  <div key={s.id} className="flex items-center gap-2">
-                    <input
-                        type="text"
-                        className="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"
-                        placeholder={`Step ${s.id} title`}
-                        value={s.title}
-                        onChange={(e) => onChangeStep(s.id, e.target.value)}
-                    />
-                    <button
-                        type="button"
-                        onClick={() => onRemoveStep(s.id)}
-                        className="text-xs px-2 py-1 rounded border border-gray-300 hover:bg-gray-100"
-                    >
-                      Delete
-                    </button>
-                  </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Image (optional) - custom picker that hides the native input and shows a custom label instead of "No file chosen" */}
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">
-              Project image (optional)
-            </label>
-
-            {/* Hidden native input */}
-            <input
-                id="p-image"
-                type="file"
-                accept="image/*"
-                onChange={onPickImage}
-                ref={fileInputRef}
-                className="hidden"
-            />
-
-            {/* Custom button to open the file dialog */}
-            <label
-                htmlFor="p-image"
-                className="inline-block px-3 py-2 text-sm border border-gray-300 rounded cursor-pointer hover:bg-gray-100"
+        <section className="relative w-full max-w-4xl z-10">
+          {/* Header */}
+          <div className="flex justify-between items-center mb-6">
+            <Link
+                to="/project"
+                className="px-4 py-2 text-white font-semibold rounded-lg shadow-md hover:shadow-lg"
+                style={{ background: "linear-gradient(to right, #008096, #96007E)" }}
             >
-              Upload image
-            </label>
+              ← Back to Projects
+            </Link>
+            <h1 className="text-2xl md:text-3xl font-bold text-center flex-1">
+              Create New Project
+            </h1>
+            <div className="w-24" /> {/* Empty block for symmetry */}
+          </div>
 
-            {/* File name text (instead of the native 'No file chosen') */}
-            {fileName && (
-                <span className="ml-2 align-middle text-xs text-gray-500">
-              Selected: {fileName}
-            </span>
-            )}
-
-            {/* Allow removing the selected image */}
-            {(fileName || imageDataUrl) && (
-                <button
-                    type="button"
-                    onClick={onRemoveImage}
-                    className="ml-3 text-xs px-2 py-1 rounded border border-gray-300 hover:bg-gray-100"
-                >
-                  Remove image
-                </button>
-            )}
-
-            {imageDataUrl && (
-                <div className="mt-3">
-                  <img
-                      src={imageDataUrl}
-                      alt="Preview"
-                      className="max-h-40 rounded border border-gray-200"
+          {/* Form container */}
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-200 bg-opacity-95 p-6 space-y-6">
+            <form onSubmit={onSubmit} className="space-y-6">
+              {/* Title & Deadline */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-lg font-semibold mb-2">
+                    Project title <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                      type="text"
+                      className="w-full border rounded-xl px-4 py-2"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      required
                   />
                 </div>
-            )}
-          </div>
+                <div>
+                  <label className="block text-lg font-semibold mb-2">
+                    Deadline <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                      type="date"
+                      className="w-full border rounded-xl px-4 py-2"
+                      value={dueDate}
+                      onChange={(e) => setDueDate(e.target.value)}
+                      required
+                  />
+                </div>
+              </div>
 
-          <div className="pt-2">
-            <button
-                type="submit"
-                disabled={!canSubmit}
-                className="px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 disabled:opacity-50 hover:bg-gray-100"
-            >
-              Create project
-            </button>
+              {/* Description */}
+              <div>
+                <label className="block text-lg font-semibold mb-2">
+                  Description (optional)
+                </label>
+                <textarea
+                    className="w-full border rounded-xl px-4 py-2"
+                    rows={3}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                />
+              </div>
+
+              {/* Steps */}
+              <div className="bg-gray-50 rounded-xl p-4">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-lg font-semibold">Steps (optional)</span>
+                  <button
+                      type="button"
+                      onClick={onAddStep}
+                      className="px-4 py-2 rounded-lg text-white"
+                      style={{ background: "linear-gradient(to right, #96007E, #809600)" }}
+                  >
+                    + Add Step
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  {steps.map((s, idx) => (
+                      <div
+                          key={s.id}
+                          className="flex items-center gap-3 p-3 bg-white border rounded-xl"
+                      >
+                        <span className="w-6 text-gray-500">#{idx + 1}</span>
+                        <input
+                            type="text"
+                            className="flex-1 border rounded-lg px-3 py-2"
+                            value={s.title}
+                            onChange={(e) => onChangeStep(s.id, e.target.value)}
+                        />
+                        <button
+                            type="button"
+                            onClick={() => onRemoveStep(s.id)}
+                            className="text-red-600 border px-3 py-1 rounded-lg"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Image */}
+              <div className="bg-gray-50 rounded-xl p-4 flex flex-col items-center">
+                <label
+                    htmlFor="p-image"
+                    className="inline-flex items-center justify-center px-6 py-2 rounded-lg bg-gradient-to-r from-[#008096] to-[#96007E] text-white font-semibold cursor-pointer shadow-md w-40 text-center"
+                >
+                  {imageDataUrl ? "Change Image" : "Upload"}
+                </label>
+                <input
+                    id="p-image"
+                    type="file"
+                    accept="image/*"
+                    ref={fileInputRef}
+                    onChange={onPickImage}
+                    className="hidden"
+                />
+                {fileName && <div className="mt-2 text-sm text-gray-600">Selected: {fileName}</div>}
+                {imageDataUrl && (
+                    <>
+                      <div className="mt-4 w-40 h-40 rounded-lg overflow-hidden border">
+                        <img
+                            src={imageDataUrl}
+                            alt="Preview"
+                            className="object-cover w-full h-full"
+                        />
+                      </div>
+                      <button
+                          type="button"
+                          onClick={onRemoveImage}
+                          className="mt-2 text-red-600 border px-3 py-1 rounded-lg"
+                      >
+                        Remove image
+                      </button>
+                    </>
+                )}
+              </div>
+
+              {/* Submit */}
+              <div className="flex justify-center">
+                <button
+                    type="submit"
+                    disabled={!canSubmit}
+                    className="px-8 py-3 rounded-xl text-white font-semibold disabled:opacity-50"
+                    style={{
+                      background: canSubmit
+                          ? "linear-gradient(to right, #008096, #96007E)"
+                          : "gray",
+                    }}
+                >
+                  Create project
+                </button>
+              </div>
+            </form>
           </div>
-        </form>
+        </section>
       </div>
   );
 }
