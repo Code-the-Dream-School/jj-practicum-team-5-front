@@ -3,7 +3,7 @@ import { useContext } from "react";
 import { AuthContext } from "../contexts/AuthContext";
 
 export default function Header({
-  leftLogoSize = 95, // 👈 новый проп для левого логотипа
+  leftLogoSize = 95, // 👈
   logoSize = 160,
   logoOffset = -60,
   titleOffset = 40,
@@ -13,6 +13,7 @@ export default function Header({
   const navigate = useNavigate();
   const location = useLocation();
 
+    const isHomePage = location.pathname === "/";
   const isDashboardPage = location.pathname === "/dashboard";
 
   // Links: custom deep violet (#3C0032), font +10%
@@ -30,7 +31,7 @@ export default function Header({
         height: "80px", // fixed header height
       }}
     >
-      {/* Left logo (добавлено) */}
+
       <Link to="/" className="flex items-center">
         <img
           src="/images/logo.png"
@@ -43,13 +44,25 @@ export default function Header({
         <nav style={{ display: "flex", gap: "1rem" }}>
             {isAuthenticated && (
                 <>
-                    <Link to="/" className={linkStyle}>
-                        Home
-                    </Link>
-                    {!isDashboardPage && (
+                    {isHomePage && (
                         <Link to="/dashboard" className={linkStyle}>
                             Dashboard
                         </Link>
+                    )}
+                    {isDashboardPage && (
+                        <Link to="/" className={linkStyle}>
+                            Home
+                        </Link>
+                    )}
+                    {!isHomePage && !isDashboardPage && (
+                        <>
+                            <Link to="/" className={linkStyle}>
+                                Home
+                            </Link>
+                            <Link to="/dashboard" className={linkStyle}>
+                                Dashboard
+                            </Link>
+                        </>
                     )}
                 </>
             )}

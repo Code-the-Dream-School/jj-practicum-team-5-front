@@ -26,7 +26,6 @@ export default function LoginPage() {
 
         try {
             const response = await fetch(`${API_URL}/api/v1/auth/loginUser`, {
-
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -60,90 +59,141 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-            <div className="w-full max-w-md">
-                <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h1>
-                    <p className="text-gray-600">Please enter your credentials to login</p>
-                </div>
+        <div className="min-h-screen relative overflow-hidden">
+            <div
+                className="absolute inset-0"
+                style={{
+                    background: `
+                      linear-gradient(to bottom,
+                        rgba(171, 212, 246, 1) 0%,
+                        rgba(171, 212, 246, 0.7) 60%,
+                        rgba(171, 212, 246, 0.3) 100%
+                      )
+                    `,
+                }}
+            />
 
-                <form
-                    onSubmit={handleSubmit}
-                    className="bg-white shadow-xl rounded-2xl p-8 backdrop-blur-sm bg-opacity-90"
-                >
-                    <div className="mb-6">
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                            Email Address
-                        </label>
-                        <input
-                            id="email"
-                            type="email"
-                            placeholder="your@email.com"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
-                        />
-                    </div>
+            <div className="absolute inset-0">
+                <div
+                    className="absolute inset-0 opacity-20"
+                    style={{
+                        backgroundImage: `url('/images/mycelium.webp')`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                    }}
+                />
+            </div>
 
-                    <div className="mb-8">
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                            Password
-                        </label>
-                        <input
-                            id="password"
-                            type="password"
-                            placeholder="••••••••"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
-                        />
-                    </div>
-
-                    <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-all duration-300 ${
-                            isSubmitting
-                                ? 'bg-indigo-400 cursor-not-allowed'
-                                : 'bg-indigo-600 hover:bg-indigo-700 shadow-md hover:shadow-lg transform hover:-translate-y-0.5'
-                        }`}
-                    >
-                        {isSubmitting ? (
-                            <span className="flex items-center justify-center">
-                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                Processing...
+            <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
+                <div className="w-full max-w-md">
+                    <div className="text-center mb-8">
+                        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
+                            Welcome
+                            <span className="block" style={{ color: "#007A8E" }}>
+                                Back
                             </span>
-                        ) : (
-                            'Sign In'
-                        )}
-                    </button>
-                    {error && (
-
-                        <p className="text-red-500 text-sm mb-4">{error}</p>
-                    )}
-
-
-                    <div className="mt-6 text-center">
-                        <a href="#" className="text-sm text-indigo-600 hover:text-indigo-800 hover:underline">
-                            Forgot password?
-                        </a>
+                        </h1>
+                        <p className="text-xl text-gray-700 leading-relaxed">
+                            Please enter your credentials to login
+                        </p>
                     </div>
-                </form>
 
-                <div className="mt-8 text-center text-sm text-gray-600">
-                    Don't have an account?{' '}
-                    <button
-                        type="button"
-                        onClick={() => navigate('/signup')}
-                        className="font-medium text-indigo-600 hover:text-indigo-800 hover:underline"
+                    <form
+                        onSubmit={handleSubmit}
+                        className="bg-white bg-opacity-90 rounded-2xl p-8 shadow-xl border border-gray-200 backdrop-blur-sm"
                     >
-                        Sign up
-                    </button>
+                        {error && (
+                            <div className="mb-6 p-4 rounded-xl border border-red-200 bg-red-50">
+                                <p className="text-red-800 text-sm font-medium">{error}</p>
+                            </div>
+                        )}
+
+                        <div className="mb-6">
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                                Email Address
+                            </label>
+                            <input
+                                id="email"
+                                type="email"
+                                placeholder="your@email.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 bg-white shadow-sm"
+                                style={{
+                                    focusRingColor: "#007A8E"
+                                }}
+                                onFocus={(e) => e.target.style.borderColor = "#007A8E"}
+                                onBlur={(e) => e.target.style.borderColor = "#D1D5DB"}
+                            />
+                        </div>
+
+                        <div className="mb-8">
+                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                                Password
+                            </label>
+                            <input
+                                id="password"
+                                type="password"
+                                placeholder="••••••••"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 bg-white shadow-sm"
+                                style={{
+                                    focusRingColor: "#007A8E"
+                                }}
+                                onFocus={(e) => e.target.style.borderColor = "#007A8E"}
+                                onBlur={(e) => e.target.style.borderColor = "#D1D5DB"}
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className={`w-full py-4 px-6 rounded-xl font-semibold text-white transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 ${
+                                isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
+                            }`}
+                            style={{
+                                background: "linear-gradient(to right, #008096, #96007E)",
+                            }}
+                        >
+                            {isSubmitting ? (
+                                <span className="flex items-center justify-center">
+                                    <div
+                                        className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"
+                                    ></div>
+                                    Processing...
+                                </span>
+                            ) : (
+                                'Sign In'
+                            )}
+                        </button>
+
+                        <div className="mt-6 text-center">
+                            <a
+                                href="#"
+                                className="text-sm font-medium hover:underline transition-colors duration-200"
+                                style={{ color: "#007A8E" }}
+                            >
+                                Forgot password?
+                            </a>
+                        </div>
+                    </form>
+
+                    <div className="mt-8 text-center bg-white bg-opacity-90 rounded-2xl p-6 shadow-lg border border-gray-200">
+                        <p className="text-gray-700">
+                            Don't have an account?{' '}
+                            <button
+                                type="button"
+                                onClick={() => navigate('/signup')}
+                                className="font-semibold hover:underline transition-colors duration-200"
+                                style={{ color: "#007A8E" }}
+                            >
+                                Sign up
+                            </button>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
