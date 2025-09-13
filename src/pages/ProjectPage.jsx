@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 import Badge from "../components/Badge";
 import ProgressBar from "../components/ProgressBar";
@@ -13,350 +13,362 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 export default function ProjectPage() {
     const { projectId } = useParams();
-    const navigate = useNavigate();
 
-    // Load all projects (with migration)
-    const [projects, setProjects] = useState(() => projectsStore.load());
+    const [current, setCurrent] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [showNewStep, setShowNewStep] = useState(false);
 
-    // Persist on change
+    // Load project from backend
     useEffect(() => {
-        projectsStore.save(projects);
-    }, [projects]);
-
-    // Migrate legacy steps
-    useEffect(() => {
-        const legacy = loadLegacySteps();
-        if (!legacy) return;
-        setProjects((prev) => {
-            if (prev.length === 0) {
-                const seeded = createProject(projectId, legacy);
-                return [seeded];
+        const fetchProject = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+                const token = localStorage.getItem("authToken");
+                const res = await fetch(`${API_URL}/api/v1/projects/${projectId}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                if (!res.ok) throw new Error("Failed to fetch project");
+                const data = await res.json();
+                setCurrent(data.project);
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
             }
-            return prev;
-        });
-        removeLegacySteps();
+        };
+        fetchProject();
     }, [projectId]);
 
-    // Ensure a project exists for current route id (or at least one default)
-    useEffect(() => {
-        setProjects((prev) => {
-            if (projectId) {
-                const exists = prev.some((p) => p.id === projectId);
-                if (!exists) return [createProject(projectId), ...prev];
-                return prev;
-            }
-            if (prev.length === 0) return [createProject()];
-            return prev;
+    // Helper to update project both locally and on server
+    const updateCurrentProject = async (updates) => {
+        if (!current) return;
+        const token = localStorage.getItem("authToken");
 
-        });
-        if (!res.ok) throw new Error("Failed to fetch project");
-        const data = await res.json();
-        setCurrent(data.project);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProject();
-  }, [projectId]);
+        // Prepare updated project object
+        const updated = { ...current, ...updates };
 
-  // Helper to update project both locally and on server
-  const updateCurrentProject = async (updates) => {
-    if (!current) return;
-    const token = localStorage.getItem("authToken");
+        // Optimistic update (update UI immediately)
+        setCurrent(updated);
 
-    // Prepare updated project object
-    const updated = { ...current, ...updates };
+        try {
+            const res = await fetch(`${API_URL}/api/v1/projects/${current._id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(updated),
+            });
 
-    // Optimistic update (update UI immediately)
-    setCurrent(updated);
+            if (!res.ok) throw new Error("Failed to update project");
 
-    try {
-      const res = await fetch(`${API_URL}/api/v1/projects/${current._id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(updated),
-      });
-
-      if (!res.ok) throw new Error("Failed to update project");
-
-      // Sync state with server response
-      const data = await res.json();
-      setCurrent(data.data);
-    } catch (err) {
-      console.error("Update failed:", err);
-    }
-  };
-
-  // Handlers
-  const onChangeDescription = (e) =>
-    updateCurrentProject({ description: e.target.value });
-
-  const onChangeProjectDue = (value) =>
-    updateCurrentProject({ dueDate: value || null });
-
-  const setStepDueDate = (stepId, value) => {
-    const steps = (current.steps || []).map((s) =>
-      s.id === stepId ? { ...s, dueDate: value || null } : s
-    );
-    updateCurrentProject({ steps });
-  };
-
-  const createStepFromModal = ({ title, description, dueDate }) => {
-    if (!current) return;
-    const steps = current.steps || [];
-    const nextId = steps.length
-      ? Math.max(...steps.map((s) => Number(s.id) || 0)) + 1
-      : 1;
-
-    const newStep = {
-      id: nextId,
-      title: title || `New Step ${nextId}`,
-      description: description || "",
-      dueDate: dueDate || null,
-      completed: false,
-      subtasks: [],
+            // Sync state with server response
+            const data = await res.json();
+            setCurrent(data.data);
+        } catch (err) {
+            console.error("Update failed:", err);
+        }
     };
 
-    // Handle back navigation
-    const handleBackToProjects = () => {
-        navigate('/dashboard');
+    // Handlers
+    const onChangeDescription = (e) =>
+        updateCurrentProject({ description: e.target.value });
+
+    const onChangeProjectDue = (value) =>
+        updateCurrentProject({ dueDate: value || null });
+
+    const setStepDueDate = (stepId, value) => {
+        const steps = (current.steps || []).map((s) =>
+            s.id === stepId ? { ...s, dueDate: value || null } : s
+        );
+        updateCurrentProject({ steps });
     };
 
-    // Project-level flags
+    const createStepFromModal = ({ title, description, dueDate }) => {
+        if (!current) return;
+        const steps = current.steps || [];
+        const nextId = steps.length
+            ? Math.max(...steps.map((s) => Number(s.id) || 0)) + 1
+            : 1;
+
+        const newStep = {
+            id: nextId,
+            title: title || `New Step ${nextId}`,
+            description: description || "",
+            dueDate: dueDate || null,
+            completed: false,
+            subtasks: [],
+        };
+
+        updateCurrentProject({ steps: [...steps, newStep] });
+    };
+
+    // Derived flags
     const allStepsDone = useMemo(
         () => (current?.steps || []).every((s) => derive(s).progress === 100),
         [current?.steps]
-
     );
-  }
-  if (error) {
-    return (
-      <div className="p-6 text-center text-red-600">
-        Failed to load project: {error} <br />
-        <Link to="/dashboard" className="text-blue-600 underline">
-          Back to dashboard
-        </Link>
-      </div>
+    const projectDueInfo = useMemo(
+        () => getDueInfo(current?.dueDate, allStepsDone),
+        [current?.dueDate, allStepsDone]
     );
-  }
-  if (!current) {
-    return (
-      <div className="p-6 text-center">
-        Project not found. <Link to="/dashboard">Back</Link>
-      </div>
-    );
-  }
+    const projectOverdue = projectDueInfo?.overdue;
 
-  // UI
-  return (
-    <div className="max-w-2xl mx-auto p-4 bg-gray-50 border border-gray-200 rounded-xl shadow-sm">
-      {/* Header */}
-      <div className="flex justify-between items-center border-b border-gray-200 pb-3 mb-2">
-        <div>
-          <h1 className="text-2xl font-bold">
-            {current.title?.trim() || "Untitled project"}
-          </h1>
-          {current.createdAt && (
-            <div className="text-xs text-gray-500 mt-1">
-              Created {new Date(current.createdAt).toLocaleDateString()}
-            </div>
-          )}
-        </div>
-
-    return (
-        <div className="min-h-screen relative flex flex-col items-center p-6 bg-gray-100">
-            {/* Gradient background */}
-            <div
-                className="absolute inset-0"
-                style={{
-                    background: `
-                        linear-gradient(to bottom,
+    // Loading & error states
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center" style={{
+                background: `
+                    linear-gradient(to bottom,
                         rgba(171, 212, 246, 1) 0%,
-                        rgba(171, 212, 246, 0.9) 60%,
-                        rgba(171, 212, 246, 0.5) 80%,
-                        rgba(171, 212, 246, 0) 100%
-                        )
-                    `,
-                }}
-            />
+                        rgba(171, 212, 246, 0.3) 100%
+                    )
+                `
+            }}>
+                <div className="text-center p-8 rounded-2xl bg-white bg-opacity-90 shadow-xl">
+                    <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-gray-700 text-lg font-medium">Loading project...</p>
+                </div>
+            </div>
+        );
+    }
 
-            <section className="relative w-full max-w-4xl z-10">
-                {/* Header */}
-                <div className="flex justify-between items-center mb-6">
-                    <button
-                        onClick={handleBackToProjects}
-                        className="px-4 py-2 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+    if (error) {
+        return (
+            <div className="min-h-screen flex items-center justify-center" style={{
+                background: `
+                    linear-gradient(to bottom,
+                        rgba(171, 212, 246, 1) 0%,
+                        rgba(171, 212, 246, 0.3) 100%
+                    )
+                `
+            }}>
+                <div className="text-center p-8 rounded-2xl bg-white bg-opacity-90 shadow-xl max-w-md">
+                    <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                        <div className="w-8 h-8 text-red-500">⚠</div>
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-900 mb-2">Failed to load project</h2>
+                    <p className="text-red-600 mb-4">{error}</p>
+                    <Link
+                        to="/dashboard"
+                        className="inline-flex items-center px-6 py-2 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                        style={{
+                            background: "linear-gradient(to right, #008096, #96007E)",
+                        }}
+                    >
+                        Back to dashboard
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+
+    if (!current) {
+        return (
+            <div className="min-h-screen flex items-center justify-center" style={{
+                background: `
+                    linear-gradient(to bottom,
+                        rgba(171, 212, 246, 1) 0%,
+                        rgba(171, 212, 246, 0.3) 100%
+                    )
+                `
+            }}>
+                <div className="text-center p-8 rounded-2xl bg-white bg-opacity-90 shadow-xl">
+                    <h2 className="text-xl font-bold text-gray-900 mb-4">Project not found</h2>
+                    <Link
+                        to="/dashboard"
+                        className="inline-flex items-center px-6 py-2 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                        style={{
+                            background: "linear-gradient(to right, #008096, #96007E)",
+                        }}
+                    >
+                        Back to dashboard
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+
+    // UI
+    return (
+        <div className="min-h-screen" style={{
+            background: `
+                linear-gradient(to bottom,
+                    rgba(171, 212, 246, 1) 0%,
+                    rgba(171, 212, 246, 0.5) 40%,
+                    rgba(171, 212, 246, 0.2) 100%
+                )
+            `
+        }}>
+            <div className="max-w-4xl mx-auto p-6">
+                {/* Back Button */}
+                <div className="mb-4">
+                    <Link
+                        to="/dashboard"
+                        className="px-4 py-2 text-white font-semibold rounded-lg shadow-md hover:shadow-lg"
                         style={{ background: "linear-gradient(to right, #008096, #96007E)" }}
                     >
                         ← Back to Projects
-                    </button>
-                    <h1 className="text-2xl md:text-3xl font-bold text-center flex-1">
-                        Project Details
-                    </h1>
-                    <div className="w-24" /> {/* Empty block for symmetry */}
+                    </Link>
                 </div>
 
-                {/* Main content container */}
-                <div className="bg-white rounded-2xl shadow-xl border border-gray-200 bg-opacity-95 p-6 space-y-6">
-                    {isProjectNotFound ? (
-                        <div className="p-4 text-center">
-                            <h2 className="text-xl font-semibold mb-4">Project not found</h2>
-                            <button
-                                onClick={handleBackToProjects}
-                                className="px-4 py-2 text-white font-semibold rounded-lg transition-all duration-200"
-                                style={{ background: "linear-gradient(to right, #008096, #96007E)" }}
-                            >
-                                Back to Projects
-                            </button>
+                {/* Header Card */}
+                <div className="bg-white bg-opacity-90 rounded-2xl shadow-xl p-6 mb-6 backdrop-blur-sm">
+                    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-gray-200 pb-4 mb-4">
+                        <div className="flex-1">
+                            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                                {current.title?.trim() || "Untitled project"}
+                            </h1>
+                            {current.createdAt && (
+                                <div className="text-sm text-gray-600 flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: "#007A8E" }}></div>
+                                    Created {new Date(current.createdAt).toLocaleDateString()}
+                                </div>
+                            )}
                         </div>
-                    ) : (
-                        <>
-                            {/* Project Header */}
-                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-200 pb-4">
-                                <div className="flex-1">
-                                    <h1 className="text-2xl font-bold">
-                                        {current.title?.trim() || "Untitled project"}
-                                    </h1>
-                                    {current.createdAt && (
-                                        <div className="text-sm text-gray-500 mt-1">
-                                            Created {new Date(current.createdAt).toLocaleDateString()}
-                                        </div>
-                                    )}
-                                </div>
 
-                                {/* Project deadline + Overdue badge */}
-                                <div className="flex flex-col items-end gap-2">
-                                    <div className="flex items-center gap-2">
-                                        <label htmlFor="project-due" className="text-sm font-semibold">
-                                            Project Deadline
-                                        </label>
-                                        <input
-                                            id="project-due"
-                                            type="date"
-                                            value={current.dueDate || ""}
-                                            onChange={(e) => onChangeProjectDue(e.target.value)}
-                                            className="border border-gray-300 rounded-xl px-3 py-2"
-                                        />
-                                    </div>
-                                    {projectOverdue && (
-                                        <Badge status="error" className="text-sm">
-                                            Overdue
-                                        </Badge>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Project <24h warning */}
-                            <DueBanner
-                                dueInfo={projectDueInfo}
-                                text="less than 24 hours to the project deadline"
+                        {/* Project deadline + Overdue badge */}
+                        <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-3 border border-gray-200">
+                            <label htmlFor="project-due" className="text-sm font-medium text-gray-700">
+                                Project due
+                            </label>
+                            <input
+                                id="project-due"
+                                type="date"
+                                value={current.dueDate ? current.dueDate.substring(0, 10) : ""}
+                                onChange={(e) => onChangeProjectDue(e.target.value)}
+                                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                             />
-
-                            {/* Description */}
-                            <div>
-                                <label className="block text-lg font-semibold mb-2">
-                                    Description
-                                </label>
-                                <textarea
-                                    className="w-full p-3 border border-gray-300 rounded-xl text-sm"
-                                    placeholder="Project description…"
-                                    value={current.description || ""}
-                                    onChange={onChangeDescription}
-                                    rows={3}
-                                />
-                            </div>
-
-                            {/* Steps Section */}
-                            <div className="bg-gray-50 rounded-xl p-4">
-                                <div className="flex justify-between items-center mb-4">
-                                    <h2 className="text-lg font-semibold">Key Steps</h2>
-                                    <button
-                                        onClick={() => setShowNewStep(true)}
-                                        className="px-4 py-2 rounded-lg text-white font-semibold transition-all duration-200 hover:shadow-lg"
-                                        style={{ background: "linear-gradient(to right, #96007E, #809600)" }}
-                                    >
-                                        + Add Step
-                                    </button>
+                            {projectOverdue && (
+                                <div className="px-3 py-1 bg-red-100 text-red-800 rounded-lg text-sm font-medium">
+                                    Overdue
                                 </div>
+                            )}
+                        </div>
+                    </div>
 
-                                <div className="space-y-4">
-                                    {(current.steps || []).map((s) => {
-                                        const meta = derive(s);
-                                        const variant = toVariant(meta.status);
-                                        return (
-                                            <Link
-                                                to={`/project/${current.id}/step/${s.id}`}
-                                                key={s.id}
-                                                className="block p-4 border border-gray-200 rounded-xl bg-white hover:shadow-md transition-all"
-                                            >
-                                                <div className="flex items-start justify-between gap-4">
-                                                    <div className="flex-1">
-                                                        <div className="text-lg font-medium mb-2">{s.title}</div>
+                    {/* Project <24h warning */}
+                    <DueBanner
+                        dueInfo={projectDueInfo}
+                        text="less than 24 hours to the project deadline"
+                    />
 
-                                                        {/* Inline step due date */}
-                                                        <div className="flex items-center gap-3 mb-3">
-                                                            <label
-                                                                className="text-sm text-gray-600 font-medium"
-                                                                htmlFor={`due-${current.id}-${s.id}`}
-                                                            >
-                                                                Due date:
-                                                            </label>
-                                                            <input
-                                                                id={`due-${current.id}-${s.id}`}
-                                                                type="date"
-                                                                value={s.dueDate || ""}
-                                                                onClick={(e) => e.stopPropagation()}
-                                                                onChange={(e) => {
-                                                                    e.stopPropagation();
-                                                                    setStepDueDate(s.id, e.target.value);
-                                                                }}
-                                                                className="border border-gray-300 rounded-lg px-3 py-1 text-sm"
-                                                            />
-                                                        </div>
-
-                                                        {/* Progress bar */}
-                                                        <div className="mt-3">
-                                                            <ProgressBar status={variant} value={meta.progress} />
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Badge + percent */}
-                                                    <div className="flex flex-col items-end gap-2 shrink-0">
-                                                        <Badge status={variant} className="text-sm">
-                                                            {meta.status}
-                                                        </Badge>
-                                                        <span className="text-lg font-semibold text-gray-700">
-                                                            {meta.progress}%
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </Link>
-                                        );
-                                    })}
-
-                                    {(current.steps || []).length === 0 && (
-                                        <div className="text-center py-8 text-gray-500">
-                                            No steps yet. Click "Add Step" to get started.
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Modal to create a new step */}
-                            <NewStepModal
-                                open={showNewStep}
-                                onClose={() => setShowNewStep(false)}
-                                onCreate={createStepFromModal}
-                            />
-                        </>
-                    )}
+                    {/* Description */}
+                    <div>
+                        <label
+                            htmlFor="project-desc"
+                            className="block text-sm font-medium text-gray-700 mb-2"
+                        >
+                            Description
+                        </label>
+                        <textarea
+                            id="project-desc"
+                            className="w-full p-4 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white bg-opacity-70"
+                            placeholder="Project description…"
+                            value={current.description || ""}
+                            onChange={onChangeDescription}
+                            rows={4}
+                        />
+                    </div>
                 </div>
-            </section>
+
+                {/* Steps Section */}
+                <div className="bg-white bg-opacity-90 rounded-2xl shadow-xl p-6 backdrop-blur-sm">
+                    {/* Steps Header */}
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-2xl font-bold text-gray-900">Key Steps</h2>
+                        <button
+                            onClick={() => setShowNewStep(true)}
+                            className="inline-flex items-center px-6 py-2 font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-white"
+                            style={{
+                                background: "linear-gradient(to right, #96007E, #809600)",
+                            }}
+                        >
+                            + Add Step
+                        </button>
+                    </div>
+
+                    {/* Steps List */}
+                    <div className="space-y-4">
+                        {(current.steps || []).length === 0 ? (
+                            <div className="text-center py-12">
+                                <div
+                                    className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg"
+                                    style={{ backgroundColor: "#004C5A" }}
+                                >
+                                    <div className="text-white text-2xl">📝</div>
+                                </div>
+                                <h3 className="text-xl font-semibold text-gray-900 mb-2">No steps yet</h3>
+                                <p className="text-gray-600">Start by adding your first project step</p>
+                            </div>
+                        ) : (
+                            (current.steps || []).map((s) => {
+                                const meta = derive(s);
+                                const variant = toVariant(meta.status);
+                                return (
+                                    <Link
+                                        to={`/project/${current._id}/step/${s.id}`}
+                                        key={s.id}
+                                        className="block p-6 border border-gray-200 rounded-2xl bg-white bg-opacity-70 hover:bg-opacity-90 hover:shadow-lg transition-all duration-200 transform hover:-translate-y-1"
+                                    >
+                                        <div className="flex items-start justify-between gap-4">
+                                            <div className="flex-1">
+                                                <div className="text-lg font-semibold text-gray-900 mb-3">{s.title}</div>
+
+                                                {/* Inline step due date */}
+                                                <div className="flex items-center gap-3 mb-4 bg-gray-50 rounded-lg p-3">
+                                                    <label
+                                                        className="text-sm font-medium text-gray-700"
+                                                        htmlFor={`due-${current._id}-${s.id}`}
+                                                    >
+                                                        Due date
+                                                    </label>
+                                                    <input
+                                                        id={`due-${current._id}-${s.id}`}
+                                                        type="date"
+                                                        value={s.dueDate ? s.dueDate.substring(0, 10) : ""}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        onChange={(e) => {
+                                                            e.stopPropagation();
+                                                            setStepDueDate(s.id, e.target.value);
+                                                        }}
+                                                        className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                                    />
+                                                </div>
+
+                                                {/* Progress bar */}
+                                                <div>
+                                                    <ProgressBar status={variant} value={meta.progress} />
+                                                </div>
+                                            </div>
+
+                                            {/* Badge + percent */}
+                                            <div className="flex flex-col items-center gap-3 shrink-0">
+                                                <Badge status={variant}>{meta.status}</Badge>
+                                                <div
+                                                    className="text-xl font-bold w-16 h-16 rounded-full flex items-center justify-center text-white shadow-lg"
+                                                    style={{ backgroundColor: variant === 'success' ? '#4C5A00' : variant === 'warning' ? '#5A004C' : '#004C5A' }}
+                                                >
+                                                    {meta.progress}%
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </Link>
+                                );
+                            })
+                        )}
+                    </div>
+                </div>
+
+                {/* Modal to create a new step */}
+                <NewStepModal
+                    open={showNewStep}
+                    onClose={() => setShowNewStep(false)}
+                    onCreate={createStepFromModal}
+                />
+            </div>
         </div>
     );
 }

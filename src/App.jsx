@@ -15,35 +15,35 @@ import { AuthProvider } from './contexts/AuthContext';
 import "./index.css";
 
 export default function App() {
-  return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route element={<MainLayout />}>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignUpForm />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+    return (
+        <AuthProvider>
+            <BrowserRouter>
+                <Routes>
+                    <Route element={<MainLayout />}>
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route path="/signup" element={<SignUpForm />} />
+                        <Route path="/dashboard" element={<Dashboard />} />
 
-            {/* IMPORTANT: creation route must come before the param route */}
-            <Route path="/projects/new" element={<ProjectFormPage />} />
+                        {/* IMPORTANT: creation route must come before the param route */}
+                        <Route path="/projects/new" element={<ProjectFormPage />} />
 
-            {/* ADDED: plain /project shows default/first project */}
-            <Route path="/project" element={<ProjectPage />} />
+                        {/* ADDED: plain /project shows default/first project */}
+                        <Route path="/project" element={<ProjectPage />} />
 
-            {/* UNIFIED: use :projectId everywhere (not :id) */}
-            <Route path="/project/:projectId" element={<ProjectPage />} />
+                        {/* UNIFIED: use :projectId everywhere (not :id) */}
+                        <Route path="/project/:projectId" element={<ProjectPage />} />
 
-            {/* Step route stays consistent with :projectId */}
-            <Route
-              path="/project/:projectId/step/:stepId"
-              element={<StepPage />}
-            />
-              <Route path="*" element={<NotFound />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
+                        {/* Step route stays consistent with :projectId */}
+                        <Route
+                            path="/project/:projectId/step/:stepId"
+                            element={<StepPage />}
+                        />
+                        <Route path="*" element={<NotFound />} />
+                    </Route>
+                </Routes>
+            </BrowserRouter>
+        </AuthProvider>
 
-  );
+    );
 }
