@@ -3,11 +3,11 @@ import { Link } from "react-router-dom";
 
 export default function HomePage({ fadeStart = 10 }) {
   return (
-      <div className="min-h-screen flex flex-col">
+      <div className="h-screen overflow-y-auto flex flex-col">
         {/* Hero */}
-        <section className="relative overflow-hidden">
+        <section className="relative">
           <div
-              className="absolute inset-0"
+              className="absolute inset-0 pointer-events-none"
               style={{
                 background: `
               linear-gradient(to bottom,
@@ -19,13 +19,13 @@ export default function HomePage({ fadeStart = 10 }) {
             `,
               }}
           />
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 z-10">
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 md:py-14 z-10">
             <div className="text-center">
-              <h1 className="text-xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 leading-tight">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 leading-tight">
                 Manage Projects
                 <span className="block mt-1 text-[#007A8E]">Efficiently</span>
               </h1>
-              <p className="text-base sm:text-lg text-gray-700 mb-2 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-base sm:text-lg text-gray-700 mb-4 max-w-2xl mx-auto leading-relaxed">
                 Modern project management system that helps your team achieve
                 goals faster and more organized
               </p>
@@ -55,7 +55,7 @@ export default function HomePage({ fadeStart = 10 }) {
 
         {/* Features + Why Choose Us */}
         <section className="relative">
-          <div className="absolute inset-0">
+          <div className="absolute inset-0 pointer-events-none">
             <div
                 className="absolute inset-0"
                 style={{
@@ -74,9 +74,9 @@ export default function HomePage({ fadeStart = 10 }) {
 
           <div className="relative z-10">
             {/* Features */}
-            <div className="py-4">
+            <div className="py-8 sm:py-12">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-2">
+                <div className="text-center mb-6">
                   <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
                     Everything You Need to Succeed
                   </h2>
@@ -86,7 +86,7 @@ export default function HomePage({ fadeStart = 10 }) {
                   </p>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                   {[
                     { icon: "📋", bg: "#004C5A", title: "Task Management", text: "Create, assign and track tasks" },
                     { icon: "👥", bg: "#4C5A00", title: "Team Collaboration", text: "Unite teams and share files" },
@@ -111,8 +111,8 @@ export default function HomePage({ fadeStart = 10 }) {
             </div>
 
             {/* Why Choose Us */}
-            <div className="py-4">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-8 items-center">
+            <div className="py-8 sm:py-10">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                 <div>
                   <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2">
                     Why Choose Our System?
@@ -136,7 +136,7 @@ export default function HomePage({ fadeStart = 10 }) {
                 </div>
 
                 {/* Stats */}
-                <div className="bg-white bg-opacity-90 border border-gray-200 rounded-xl shadow-lg p-6">
+                <div className="bg-white bg-opacity-90 border border-gray-200 rounded-xl shadow-lg p-6 mt-6 lg:mt-0">
                   <div className="text-center space-y-6">
                     <div>
                       <div className="text-3xl sm:text-4xl font-bold text-[#B40098]">95%</div>
@@ -154,7 +154,7 @@ export default function HomePage({ fadeStart = 10 }) {
         </section>
 
         {/* CTA */}
-        <section className="py-4 bg-[#008096]">
+        <section className="py-8 bg-[#008096]">
           <div className="max-w-2xl mx-auto text-center px-4">
             <h2 className="text-xl sm:text-2xl font-bold text-white mb-4">
               Ready to Get Started?
