@@ -19,7 +19,7 @@ export default function HomePage({ fadeStart = 10 }) {
             `,
               }}
           />
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 md:py-14 z-10">
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 md:py-6 z-10">
             <div className="text-center">
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 leading-tight">
                 Manage Projects
@@ -74,7 +74,7 @@ export default function HomePage({ fadeStart = 10 }) {
 
           <div className="relative z-10">
             {/* Features */}
-            <div className="py-8 sm:py-12">
+            <div className="py-4 sm:py-6">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-6">
                   <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
@@ -111,7 +111,7 @@ export default function HomePage({ fadeStart = 10 }) {
             </div>
 
             {/* Why Choose Us */}
-            <div className="py-8 sm:py-10">
+            <div className="py-4 sm:py-6">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                 <div>
                   <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2">
@@ -154,7 +154,7 @@ export default function HomePage({ fadeStart = 10 }) {
         </section>
 
         {/* CTA */}
-        <section className="py-8 bg-[#008096]">
+        <section className="py-4 bg-[#008096]">
           <div className="max-w-2xl mx-auto text-center px-4">
             <h2 className="text-xl sm:text-2xl font-bold text-white mb-4">
               Ready to Get Started?
@@ -162,7 +162,7 @@ export default function HomePage({ fadeStart = 10 }) {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                   to="/login"
-                  className="inline-flex items-center px-8 py-4 bg-white font-semibold rounded-xl hover:bg-gray-100 transition-all duration-200 shadow-lg hover:shadow-xl"
+                  className="inline-flex items-center px-8 py-2 bg-white font-semibold rounded-xl hover:bg-gray-100 transition-all duration-200 shadow-lg hover:shadow-xl"
                   style={{ color: "#008096" }}
               >
                 Login
