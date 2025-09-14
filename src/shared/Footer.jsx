@@ -3,18 +3,17 @@ import { FaLinkedin } from "react-icons/fa";
 
 export default function Footer() {
     const teamMembers = [
-        { name: "Almira", url: "https://www.linkedin.com/in/daria-pavlyuk/" },
+        { name: "Almira", url: "https://www.linkedin.com" },
         { name: "Anna", url: "https://www.linkedin.com/in/anna-bazileeva/" },
-        { name: "Maede", url: "https://www.linkedin.com/in/sheper96/" },
+        { name: "Maede", url: "https://www.linkedin.com" },
         { name: "Marquette", url: "https://www.linkedin.com/in/marquettehanson/" },
 
     ];
 
     return (
-        <footer className="bg-gray-100 text-center p-4
-                   relative md:fixed md:bottom-0 md:w-full">
-            {/* Ссылка на команду */}
-            <div className="mb-3 text-gray-700 text-xl font-medium">
+        <footer className="bg-gray-100 text-center py-3 ">
+
+            <div className="mb-3 mt-2 text-gray-700 text-xl font-medium">
                 <a
                     href="https://www.linkedin.com/company/team5"
                     target="_blank"
@@ -26,7 +25,6 @@ export default function Footer() {
                 </a>
             </div>
 
-            {/* Ссылки на участников */}
             <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4">
                 {teamMembers.map((member) => (
                     <a

@@ -2,15 +2,4 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body {
-    overflow: hidden;
-    height: 100%;
-}
-
-@media (max-width: 768px) {
-    html, body {
-        overflow: auto;
-        height: auto;
-    }
-}
 
