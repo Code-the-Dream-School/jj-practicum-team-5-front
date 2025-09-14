@@ -1,5 +1,6 @@
 import React from "react";
 import { FaLinkedin } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 export default function Footer() {
     const teamMembers = [
@@ -13,16 +14,13 @@ export default function Footer() {
     return (
         <footer className="bg-gray-100 text-center py-3 ">
 
-            <div className="mb-3 mt-2 text-gray-700 text-xl font-medium">
-                <a
-                    href="https://www.linkedin.com/company/team5"
-                    target="_blank"
-                    rel="noopener noreferrer"
+            <div className="mb-3 mt-2 text-[#5A004C] text-xl font-medium">
+                <Link
+                    to="/team"
                     className="hover:underline flex items-center justify-center gap-2"
                 >
-                    <FaLinkedin className="w-5 h-5 text-blue-600" />
                     Team 5, 2025
-                </a>
+                </Link>
             </div>
 
             <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4">
