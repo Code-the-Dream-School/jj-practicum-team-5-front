@@ -6,11 +6,11 @@ import Footer from  "../shared/Footer.jsx";
 
 export default function MainLayout() {
     return (
-        <div>
+        <div className="flex flex-col min-h-screen">
             <Header />
-            <main>
-                <Outlet />  
-            </main>
+
+                <Outlet />
+
             <Footer />
         </div>
     );
