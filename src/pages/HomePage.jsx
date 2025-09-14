@@ -153,7 +153,7 @@ export default function HomePage({ fadeStart = 10 }) {
           </div>
         </section>
 
-        {/* CTA */}
+        {/* CTA */}<div className="relative z-10">
         <section className="py-4 bg-[#008096]">
           <div className="max-w-2xl mx-auto text-center px-4">
             <h2 className="text-xl sm:text-2xl font-bold text-white mb-4">
@@ -179,5 +179,6 @@ export default function HomePage({ fadeStart = 10 }) {
           </div>
         </section>
       </div>
+        </div>
   );
 }

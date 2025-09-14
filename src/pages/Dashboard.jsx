@@ -43,6 +43,7 @@ export default function Dashboard() {
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isUnauthorized, setIsUnauthorized] = useState(false);
     const [currentSlide, setCurrentSlide] = useState(0);
     const navigate = useNavigate();
 
@@ -51,6 +52,7 @@ export default function Dashboard() {
             try {
                 setLoading(true);
                 setError(null);
+                setIsUnauthorized(false);
                 const token = localStorage.getItem("authToken");
                 if (!token) {
                     navigate("/login");
@@ -60,8 +62,14 @@ export default function Dashboard() {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Failed to fetch projects: ${response.status} - ${errorText}`);
+                    if (response.status === 401) {
+                        setIsUnauthorized(true);
+                        setError("Please log in to continue");
+                    } else {
+                        const errorText = await response.text();
+                        setError(`Failed to fetch projects: ${response.status} - ${errorText}`);
+                    }
+                    return;
                 }
                 const result = await response.json();
                 setProjects(result.projects || []);
@@ -114,6 +122,14 @@ export default function Dashboard() {
         { total: 0, completed: 0, inProgress: 0, overdue: 0, notStarted: 0 }
     );
 
+    const handleTryAgain = () => {
+        if (isUnauthorized) {
+            navigate("/login");
+        } else {
+            window.location.reload();
+        }
+    };
+
     if (loading)
         return (
             <div className="min-h-screen flex items-center justify-center px-4"
@@ -150,13 +166,13 @@ export default function Dashboard() {
                     <h2 className="text-lg sm:text-xl font-bold mb-2">Error</h2>
                     <p className="text-gray-700 mb-4 text-sm sm:text-base">{error}</p>
                     <button
-                        onClick={() => window.location.reload()}
+                        onClick={handleTryAgain}
                         className="text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-sm sm:text-base"
                         style={{
                             background: "linear-gradient(to right, #008096, #96007E)",
                         }}
                     >
-                        Try Again
+                        {isUnauthorized ? "Go to Login" : "Try Again"}
                     </button>
                 </div>
             </div>
