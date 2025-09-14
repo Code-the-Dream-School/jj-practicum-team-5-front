@@ -16,7 +16,7 @@ export default function Footer() {
 
             <div className="mb-3 mt-2 text-[#5A004C] text-xl font-medium">
                 <Link
-                    to="/team"
+                    to="/TeamPage"
                     className="hover:underline flex items-center justify-center gap-2"
                 >
                     Team 5, 2025
