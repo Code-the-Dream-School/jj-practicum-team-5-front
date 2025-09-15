@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 import ProjectPage from "./pages/ProjectPage.jsx";
 import StepPage from "./pages/StepPage";
 import ProjectFormPage from "./pages/ProjectFormPage.jsx";
+import TeamPage from "./pages/TeamPage.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import { AuthProvider } from './contexts/AuthContext';
 
@@ -39,6 +40,7 @@ export default function App() {
                             path="/project/:projectId/step/:stepId"
                             element={<StepPage />}
                         />
+                        <Route path="/TeamPage" element={<TeamPage />} />
                         <Route path="*" element={<NotFound />} />
                     </Route>
                 </Routes>
