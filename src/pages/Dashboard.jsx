@@ -388,7 +388,14 @@ export default function Dashboard() {
                       >
                         {project.steps?.length > 0 ? (
                           <div className="h-full overflow-y-auto">
-                            <Timeline steps={project.steps} />
+                            <Timeline
+                              steps={project.steps}
+                              onStepClick={(step) =>
+                                navigate(
+                                  `/project/${project._id}/step/${step._id}`
+                                )
+                              }
+                            />
                           </div>
                         ) : (
                           <div className="h-full flex items-center justify-center text-gray-400 text-xs sm:text-sm">

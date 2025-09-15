@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { derive } from "../utils/derive";
 
-export default function Timeline({ steps = [] }) {
+export default function Timeline({ steps = [], onStepClick }) {
   const [selectedStep, setSelectedStep] = useState(null);
   const [hoveredStep, setHoveredStep] = useState(null);
 
+  // Return colors depending on status
   const getStepColor = (status) => {
     switch (status) {
       case "Completed":
@@ -20,6 +21,7 @@ export default function Timeline({ steps = [] }) {
     }
   };
 
+  // Return icons depending on status
   const getStepIcon = (status) => {
     switch (status) {
       case "Completed":
@@ -54,7 +56,7 @@ export default function Timeline({ steps = [] }) {
 
           return (
             <div
-              key={`timeline-${index}`}
+              key={`timeline-${step._id || step.id || index}`}
               className="flex flex-col items-center"
             >
               {/* Circle */}
@@ -65,9 +67,15 @@ export default function Timeline({ steps = [] }) {
                   ${getStepColor(meta.status)}
                   ${hoveredStep === step ? "scale-110 shadow-lg" : "shadow-md"}
                 `}
-                onClick={() =>
-                  setSelectedStep(selectedStep?.id === step.id ? null : step)
-                }
+                onClick={() => {
+                  // If external navigation handler is provided
+                  if (onStepClick) {
+                    onStepClick(step);
+                  } else {
+                    // fallback to local selection
+                    setSelectedStep(selectedStep?.id === step.id ? null : step);
+                  }
+                }}
                 onMouseEnter={() => setHoveredStep(step)}
                 onMouseLeave={() => setHoveredStep(null)}
               >
@@ -119,7 +127,8 @@ export default function Timeline({ steps = [] }) {
         })}
       </div>
 
-      {selectedStep && (
+      {/* Fallback details panel when no onStepClick is passed */}
+      {!onStepClick && selectedStep && (
         <div className="mt-4 bg-gray-50 rounded-lg p-3">
           <h3 className="font-semibold text-sm text-gray-800">
             {selectedStep.title}
