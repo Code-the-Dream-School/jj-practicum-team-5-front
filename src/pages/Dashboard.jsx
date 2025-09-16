@@ -17,23 +17,39 @@ const formatDate = (dateStr) => {
   });
 };
 
-// Get color for status badge (aligned with step colors)
+// Background color for status badge
 const getStatusColor = (status) => {
   switch (status) {
     case "Completed":
-      return "bg-emerald-500 text-white border border-emerald-200";
+      return "bg-emerald-500";
     case "In Progress":
-      return "bg-amber-500 text-white border border-amber-200";
+      return "bg-amber-500";
     case "Not Started":
-      return "bg-slate-400 text-white border border-slate-200";
+      return "bg-slate-400";
     case "Overdue":
-      return "bg-rose-500 text-white border border-rose-200";
+      return "bg-rose-500";
     default:
-      return "bg-gray-400 text-white border border-gray-200";
+      return "bg-gray-400";
   }
 };
 
-// Calculate project progress & status from its steps
+// Text color depending on background
+const getStatusTextColor = (status) => {
+  if (status === "Completed" || status === "Overdue") {
+    return "#FFFFFF"; // white text on green or red
+  }
+  return "#3C0032"; // dark violet text on other backgrounds
+};
+
+// Text shadow depending on background
+const getStatusTextShadow = (status) => {
+  if (status === "Completed" || status === "Overdue") {
+    return "1px 1px 2px rgba(0,0,0,0.6)"; // dark shadow for white text
+  }
+  return "1px 1px 2px rgba(255,255,255,0.6)"; // light shadow for violet text
+};
+
+// Derive project meta info (progress + status)
 const getProjectMeta = (project) => {
   const steps = project.steps || [];
   const total = steps.length;
@@ -48,6 +64,7 @@ const getProjectMeta = (project) => {
   return { progress, status };
 };
 
+// Small statistic card
 const StatBlock = ({ label, count, gradient }) => (
   <div className="bg-white bg-opacity-90 rounded-2xl p-4 sm:p-6 text-center shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-200">
     <div
@@ -68,6 +85,7 @@ export default function Dashboard() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const navigate = useNavigate();
 
+  // Fetch projects from API
   useEffect(() => {
     const fetchProjects = async () => {
       try {
@@ -105,7 +123,7 @@ export default function Dashboard() {
     fetchProjects();
   }, [navigate]);
 
-  // Responsive slides - 1 on mobile, 2 on tablet, 3 on desktop
+  // Items per slide depending on screen size
   const getItemsPerSlide = () => {
     if (typeof window !== "undefined") {
       if (window.innerWidth < 768) return 1;
@@ -116,32 +134,24 @@ export default function Dashboard() {
 
   const [itemsPerSlide, setItemsPerSlide] = useState(getItemsPerSlide());
 
+  // Recalculate slides on resize
   useEffect(() => {
     const handleResize = () => {
       setItemsPerSlide(getItemsPerSlide());
-      setCurrentSlide(0); // Reset slide on resize
+      setCurrentSlide(0);
     };
 
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Visible projects for current slide
   const visibleProjects = projects.slice(
     currentSlide * itemsPerSlide,
     currentSlide * itemsPerSlide + itemsPerSlide
   );
 
-  const nextSlide = () =>
-    setCurrentSlide(
-      (prev) => (prev + 1) % Math.ceil(projects.length / itemsPerSlide)
-    );
-  const prevSlide = () =>
-    setCurrentSlide(
-      (prev) =>
-        (prev - 1 + Math.ceil(projects.length / itemsPerSlide)) %
-        Math.ceil(projects.length / itemsPerSlide)
-    );
-
+  // Stats aggregation
   const stats = projects.reduce(
     (acc, project) => {
       const { status } = getProjectMeta(project);
@@ -155,20 +165,28 @@ export default function Dashboard() {
     { total: 0, completed: 0, inProgress: 0, overdue: 0, notStarted: 0 }
   );
 
-  const handleTryAgain = () => {
-    if (isUnauthorized) {
-      navigate("/login");
-    } else {
-      window.location.reload();
-    }
-  };
-
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <div className="min-h-screen overflow-x-hidden">
-      <section className="relative">
+    <div className="min-h-screen overflow-x-hidden relative">
+      {/* Background with fade */}
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage: `
+            linear-gradient(to top,
+              rgba(255,255,255,0) 15%,
+              rgba(255,255,255,1) 100%
+            ),
+            url('/images/mycelium.webp')`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      />
+
+      {/* Foreground */}
+      <section className="relative z-10">
         <div className="relative z-10 py-6 sm:py-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
             {projects.length === 0 ? (
@@ -188,7 +206,7 @@ export default function Dashboard() {
                           maxHeight: "600px",
                         }}
                       >
-                        {/* Image */}
+                        {/* Project image */}
                         {project.image ? (
                           <div className="mb-2 -mx-4 sm:-mx-6 lg:-mx-8 -mt-4 sm:-mt-6 lg:-mt-8 flex-shrink-0">
                             <img
@@ -204,18 +222,20 @@ export default function Dashboard() {
 
                         {/* Status + Due Date */}
                         <div className="flex items-center justify-between mb-2">
-                          {/* Status badge */}
                           <span
-                            className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
+                            className={`px-4 py-2 rounded-full text-sm font-semibold ${getStatusColor(
                               status
                             )}`}
+                            style={{
+                              color: getStatusTextColor(status),
+                              textShadow: getStatusTextShadow(status),
+                            }}
                           >
                             {status}
                           </span>
 
-                          {/* Due Date compact */}
                           <div
-                            className="flex items-center px-2 py-1 rounded-md border text-xs sm:text-sm"
+                            className="flex items-center px-3 py-2 rounded-md border text-sm"
                             style={{
                               backgroundColor: "rgba(171, 212, 246, 0.2)",
                               borderColor: "#007A8E",
@@ -236,12 +256,12 @@ export default function Dashboard() {
                           </div>
                         </div>
 
-                        {/* Title */}
+                        {/* Project title */}
                         <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3 flex-shrink-0 line-clamp-2">
                           {project.title}
                         </h3>
 
-                        {/* Description */}
+                        {/* Project description */}
                         <div className="mb-3 sm:mb-4 flex-grow min-h-0">
                           <div className="max-h-16 sm:max-h-20 overflow-y-auto">
                             <p className="text-gray-600 leading-relaxed text-xs sm:text-sm">
@@ -274,7 +294,7 @@ export default function Dashboard() {
                           )}
                         </div>
 
-                        {/* Progress Bar */}
+                        {/* Progress bar */}
                         <div className="mb-3 sm:mb-4">
                           <ProgressBar progress={progress} />
                         </div>
