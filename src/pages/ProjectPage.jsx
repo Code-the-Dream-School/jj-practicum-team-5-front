@@ -41,7 +41,7 @@ export default function ProjectPage() {
     fetchProject();
   }, [projectId]);
 
-  // Helper to update project both locally and on server
+  // Update project both locally and on server
   const updateCurrentProject = async (updates) => {
     if (!current) return;
     const token = localStorage.getItem("authToken");
@@ -139,7 +139,7 @@ export default function ProjectPage() {
     updateCurrentProject({ steps: [...steps, newStep] });
   };
 
-  // Derived flags
+  // Derived values
   const allStepsDone = useMemo(
     () => (current?.steps || []).every((s) => derive(s).progress === 100),
     [current?.steps]
@@ -150,7 +150,7 @@ export default function ProjectPage() {
   );
   const projectOverdue = projectDueInfo?.overdue;
 
-  // UI states
+  // UI states: loading
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#ABD4F6] to-[#ABD4F650]">
@@ -164,6 +164,7 @@ export default function ProjectPage() {
     );
   }
 
+  // UI states: error
   if (error || !current) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#ABD4F6] to-[#ABD4F650]">
@@ -204,7 +205,7 @@ export default function ProjectPage() {
 
         {/* Info + Image side by side */}
         <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6">
-          {/* Info block centered */}
+          {/* Info block */}
           <div className="flex-1 max-w-3xl bg-white bg-opacity-90 rounded-2xl shadow-xl p-6 backdrop-blur-sm mx-auto">
             {/* Header */}
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-gray-200 pb-4 mb-4">
@@ -280,6 +281,7 @@ export default function ProjectPage() {
                 {(current.steps || []).map((s) => {
                   const meta = derive(s);
                   const variant = toVariant(meta.status);
+
                   return (
                     <Link
                       to={`/project/${current._id}/step/${s._id || s.id}`}
@@ -291,6 +293,7 @@ export default function ProjectPage() {
                           <div className="text-lg font-semibold text-gray-900 mb-3">
                             {s.title}
                           </div>
+
                           <div className="flex items-center gap-3 mb-4 bg-gray-50 rounded-lg p-3">
                             <label className="text-sm font-medium text-gray-700">
                               Due date
@@ -308,8 +311,11 @@ export default function ProjectPage() {
                               className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500 transition"
                             />
                           </div>
-                          <ProgressBar status={variant} value={meta.progress} />
+
+                          {/* ✅ Fixed ProgressBar usage */}
+                          <ProgressBar progress={meta.progress} />
                         </div>
+
                         <div className="flex flex-col items-center gap-3 shrink-0">
                           <Badge status={variant}>{meta.status}</Badge>
                           <div
@@ -361,6 +367,7 @@ export default function ProjectPage() {
           </div>
         </div>
 
+        {/* Modal for adding a new step */}
         <NewStepModal
           open={showNewStep}
           onClose={() => setShowNewStep(false)}
