@@ -11,35 +11,29 @@ import { derive, toVariant } from "../utils/derive";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 export default function StepPage() {
-  const { projectId, stepId } = useParams(); // /project/:projectId/step/:stepId
+  const { projectId, stepId: stepIdParam } = useParams();
+  const stepId = String(stepIdParam);
 
-  // Remote data state
-  const [projects, setProjects] = useState([]);
+  const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Load projects from API (similar to Dashboard)
+  // Load project from backend
   useEffect(() => {
-    const fetchProjects = async () => {
+    const fetchProject = async () => {
       try {
         setLoading(true);
         setError(null);
         const token = localStorage.getItem("authToken");
-        if (!token) {
-          setError("Please log in to continue");
-          return;
-        }
-        const response = await fetch(`${API_URL}/api/v1/projects`, {
+        if (!token) return;
+
+        const res = await fetch(`${API_URL}/api/v1/projects/${projectId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(
-            `Failed to fetch projects: ${response.status} - ${errorText}`
-          );
-        }
-        const result = await response.json();
-        setProjects(result.projects || []);
+        if (!res.ok) throw new Error("Failed to fetch project");
+
+        const data = await res.json();
+        setProject(data.project || null);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -47,118 +41,61 @@ export default function StepPage() {
       }
     };
 
-    fetchProjects();
-  }, []);
-
-  // Locate current project & step
-  const currentProject = useMemo(
-    () =>
-      projects.find((p) => String(p._id || p.id) === String(projectId)) || null,
-    [projects, projectId]
-  );
+    fetchProject();
+  }, [projectId]);
 
   const step = useMemo(() => {
-    if (!currentProject) return null;
-    return (
-      (currentProject.steps || []).find(
-        (s) => String(s._id || s.id) === String(stepId)
-      ) || null
-    );
-  }, [currentProject, stepId]);
+    if (!project) return null;
+    return (project.steps || []).find((s) => String(s._id || s.id) === stepId);
+  }, [project, stepId]);
 
-  // Derived meta
   const meta = useMemo(() => derive(step || {}), [step]);
   const variant = toVariant(meta.status);
   const stepDueInfo = getDueInfo(step?.dueDate, meta.progress === 100);
 
-  // Loading / error states
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-gray-600">
-        Loading step...
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-red-600">
-        Error: {error}
-      </div>
-    );
-  }
-
-  if (!currentProject || !step) {
-    return (
-      <div className="min-h-screen relative overflow-hidden">
-        {/* Background with gradient */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `
-              linear-gradient(to bottom,
-                rgba(171, 212, 246, 1) 0%,
-                rgba(171, 212, 246, 0.9) 60%,
-                rgba(171, 212, 246, 0.5) 80%,
-                rgba(171, 212, 246, 0) 100%
-              )
-            `,
-          }}
-        />
-        <div className="relative z-10 max-w-xl mx-auto p-8 pt-16">
-          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200 bg-opacity-95">
-            <p className="mb-6 text-lg text-gray-700">
-              {(!currentProject && "Project not found.") ||
-                (!step && "Step not found.")}
-            </p>
-            <Link
-              to={
-                currentProject
-                  ? `/project/${currentProject._id || currentProject.id}`
-                  : "/project"
-              }
-              className="inline-flex items-center px-6 py-3 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-              style={{
-                background: "linear-gradient(to right, #008096, #96007E)",
-              }}
-            >
-              ← Back to Project
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Local step update helper
-  const updateStep = (updater) => {
-    setProjects((prev) =>
-      prev.map((p) =>
-        String(p._id || p.id) !==
-        String(currentProject._id || currentProject.id)
-          ? p
-          : {
-              ...p,
-              steps: (p.steps || []).map((s) =>
-                String(s._id || s.id) === String(step._id || step.id)
-                  ? updater(s)
-                  : s
-              ),
-            }
-      )
-    );
+  // Save whole project after editing a step
+  const saveProject = async (updated) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) return;
+      const res = await fetch(`${API_URL}/api/v1/projects/${project._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updated),
+      });
+      if (!res.ok) throw new Error("Failed to save step");
+      const data = await res.json();
+      setProject(data.data);
+    } catch (err) {
+      console.error("Save failed:", err);
+    }
   };
 
+  const updateStep = (updater) => {
+    if (!project) return;
+    const updatedSteps = (project.steps || []).map((s) =>
+      String(s._id || s.id) === stepId ? updater(s) : s
+    );
+    const updatedProject = { ...project, steps: updatedSteps };
+    setProject(updatedProject);
+    saveProject(updatedProject);
+  };
+
+  // Handlers
   const setDescription = (val) =>
     updateStep((s) => ({ ...s, description: val }));
+
   const setDueDate = (val) =>
-    updateStep((s) => ({ ...s, dueDate: val || null })); // 'YYYY-MM-DD'
+    updateStep((s) => ({ ...s, dueDate: val || null }));
 
   const toggleSubtask = (tid) =>
     updateStep((s) => ({
       ...s,
       subtasks: (s.subtasks || []).map((t) =>
-        String(t._id || t.id) === String(tid) ? { ...t, done: !t.done } : t
+        t.id === tid ? { ...t, done: !t.done } : t
       ),
     }));
 
@@ -166,7 +103,7 @@ export default function StepPage() {
     updateStep((s) => ({
       ...s,
       subtasks: (s.subtasks || []).map((t) =>
-        String(t._id || t.id) === String(tid) ? { ...t, title } : t
+        t.id === tid ? { ...t, title } : t
       ),
     }));
 
@@ -174,14 +111,14 @@ export default function StepPage() {
     updateStep((s) => {
       const list = s.subtasks || [];
       const nextId =
-        list.length && typeof (list[0]?._id || list[0]?.id) === "number"
-          ? Math.max(...list.map((t) => Number(t._id || t.id) || 0)) + 1
+        list.length && typeof list[0]?.id === "number"
+          ? Math.max(...list.map((t) => Number(t.id) || 0)) + 1
           : list.length + 1;
       return {
         ...s,
         subtasks: [
           ...list,
-          { id: nextId, title: `New item ${nextId}`, done: false },
+          { id: nextId, title: "", done: false }, // placeholder only in UI
         ],
       };
     });
@@ -189,14 +126,40 @@ export default function StepPage() {
   const removeSubtask = (tid) =>
     updateStep((s) => ({
       ...s,
-      subtasks: (s.subtasks || []).filter(
-        (t) => String(t._id || t.id) !== String(tid)
-      ),
+      subtasks: (s.subtasks || []).filter((t) => t.id !== tid),
     }));
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-700">Loading step…</p>
+      </div>
+    );
+  }
+
+  if (error || !project || !step) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="bg-white bg-opacity-90 rounded-2xl p-8 shadow-xl max-w-md mx-auto border border-gray-200 text-center">
+          <p className="mb-4 text-lg text-gray-700">
+            {error || "Step not found."}
+          </p>
+          <Link
+            to={project ? `/project/${project._id}` : "/dashboard"}
+            className="inline-flex items-center px-6 py-3 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+            style={{
+              background: "linear-gradient(to right, #008096, #96007E)",
+            }}
+          >
+            ← Back to Project
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Hero section with gradient background */}
       <section className="relative overflow-hidden">
         <div
           className="absolute inset-0"
@@ -211,13 +174,12 @@ export default function StepPage() {
             `,
           }}
         />
-
         <div className="relative z-10 max-w-4xl mx-auto p-6 pt-8">
           {/* Header Card */}
           <div className="bg-white rounded-2xl shadow-xl p-6 mb-6 border border-gray-200 bg-opacity-95">
             <div className="flex items-center gap-4 border-b border-gray-200 pb-4 mb-4">
               <Link
-                to={`/project/${currentProject._id || currentProject.id}`}
+                to={`/project/${project._id}`}
                 className="inline-flex items-center px-4 py-2 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-sm"
                 style={{
                   background: "linear-gradient(to right, #008096, #96007E)",
@@ -241,18 +203,16 @@ export default function StepPage() {
                 </div>
               </div>
             </div>
-
-            {/* Due date warning banner */}
             <DueBanner
               dueInfo={stepDueInfo}
               text="Less than 24 hours to deadline!"
             />
           </div>
 
-          {/* Main Content Card */}
+          {/* Content */}
           <div className="bg-white rounded-2xl shadow-xl border border-gray-200 bg-opacity-95 overflow-hidden">
             <div className="p-6">
-              {/* Description Section */}
+              {/* Description */}
               <div className="mb-6">
                 <label
                   htmlFor="step-desc"
@@ -270,9 +230,8 @@ export default function StepPage() {
                 />
               </div>
 
-              {/* Due Date and Progress Grid */}
+              {/* Due date + progress */}
               <div className="grid md:grid-cols-2 gap-6 mb-6">
-                {/* Due Date */}
                 <div className="bg-gray-50 rounded-xl p-4">
                   <label
                     htmlFor="due-date"
@@ -283,13 +242,11 @@ export default function StepPage() {
                   <input
                     id="due-date"
                     type="date"
-                    value={step.dueDate || ""}
+                    value={step.dueDate ? step.dueDate.substring(0, 10) : ""}
                     onChange={(e) => setDueDate(e.target.value)}
                     className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm hover:shadow-md transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
-
-                {/* Progress */}
                 <div className="bg-gray-50 rounded-xl p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="text-lg font-semibold text-gray-900">
@@ -303,7 +260,7 @@ export default function StepPage() {
                 </div>
               </div>
 
-              {/* Subtasks Section */}
+              {/* Subtasks */}
               <div className="border-t border-gray-200 pt-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold text-gray-900">Subtasks</h2>
@@ -321,7 +278,7 @@ export default function StepPage() {
                 <div className="space-y-3">
                   {(step.subtasks || []).map((t, index) => (
                     <div
-                      key={t._id || t.id}
+                      key={t.id}
                       className="flex items-center gap-4 p-4 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 transition-all duration-200 shadow-sm hover:shadow-md"
                     >
                       <div className="flex items-center">
@@ -331,20 +288,18 @@ export default function StepPage() {
                         <input
                           type="checkbox"
                           checked={!!t.done}
-                          onChange={() => toggleSubtask(t._id || t.id)}
+                          onChange={() => toggleSubtask(t.id)}
                           className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                         />
                       </div>
                       <input
                         className="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-2 shadow-sm hover:shadow-md transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         value={t.title}
-                        onChange={(e) =>
-                          editSubtaskTitle(t._id || t.id, e.target.value)
-                        }
-                        placeholder="Enter subtask title..."
+                        onChange={(e) => editSubtaskTitle(t.id, e.target.value)}
+                        placeholder={`Subtask ${index + 1}`}
                       />
                       <button
-                        onClick={() => removeSubtask(t._id || t.id)}
+                        onClick={() => removeSubtask(t.id)}
                         className="text-sm px-3 py-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-all duration-200 shadow-sm hover:shadow-md"
                       >
                         Delete
@@ -354,8 +309,7 @@ export default function StepPage() {
                 </div>
               </div>
             </div>
-
-            {/* Stats Footer */}
+            {/* Footer */}
             <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
               <div className="flex items-center justify-between text-sm text-gray-600">
                 <div>
