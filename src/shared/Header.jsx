@@ -13,7 +13,7 @@ export default function Header({
   const navigate = useNavigate();
   const location = useLocation();
 
-    const isHomePage = location.pathname === "/";
+  const isHomePage = location.pathname === "/";
   const isDashboardPage = location.pathname === "/dashboard";
 
   // Links: custom deep violet (#3C0032), font +10%
@@ -31,42 +31,45 @@ export default function Header({
         height: "80px", // fixed header height
       }}
     >
-
+      {/* Left logo */}
       <Link to="/" className="flex items-center">
         <img
           src="/images/logo.png"
           alt="App Logo"
-          style={{ height: `${leftLogoSize}px`, width: "auto" }}
+          style={{
+            height: `${leftLogoSize}px`,
+            width: "auto",
+          }}
         />
       </Link>
 
       {/* Left navigation */}
-        <nav style={{ display: "flex", gap: "1rem" }}>
-            {isAuthenticated && (
-                <>
-                    {isHomePage && (
-                        <Link to="/dashboard" className={linkStyle}>
-                            Dashboard
-                        </Link>
-                    )}
-                    {isDashboardPage && (
-                        <Link to="/" className={linkStyle}>
-                            Home
-                        </Link>
-                    )}
-                    {!isHomePage && !isDashboardPage && (
-                        <>
-                            <Link to="/" className={linkStyle}>
-                                Home
-                            </Link>
-                            <Link to="/dashboard" className={linkStyle}>
-                                Dashboard
-                            </Link>
-                        </>
-                    )}
-                </>
+      <nav style={{ display: "flex", gap: "1rem" }}>
+        {isAuthenticated && (
+          <>
+            {isHomePage && (
+              <Link to="/dashboard" className={linkStyle}>
+                Dashboard
+              </Link>
             )}
-        </nav>
+            {isDashboardPage && (
+              <Link to="/" className={linkStyle}>
+                Home
+              </Link>
+            )}
+            {!isHomePage && !isDashboardPage && (
+              <>
+                <Link to="/" className={linkStyle}>
+                  Home
+                </Link>
+                <Link to="/dashboard" className={linkStyle}>
+                  Dashboard
+                </Link>
+              </>
+            )}
+          </>
+        )}
+      </nav>
 
       {/* Center logo + title */}
       <div style={{ textAlign: "center", flexGrow: 1, position: "relative" }}>

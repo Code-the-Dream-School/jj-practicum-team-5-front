@@ -1,28 +1,26 @@
-const barColors = {
-  success: "bg-green-500",
-  warning: "bg-orange-500",
-  error: "bg-red-500",
-  neutral: "bg-gray-300",
-};
+import React from "react";
 
-const cx = (...a) => a.filter(Boolean).join(" ");
-
-export default function ProgressBar({
-  value = 0,
-  status = "neutral",
-  className,
-}) {
-  const pct = Math.max(0, Math.min(100, value));
-  const color = barColors[status] ?? barColors.neutral;
+export default function ProgressBar({ progress = 0 }) {
+  const getBarColor = (p) => {
+    if (p === 100) return "bg-emerald-500"; // Completed
+    if (p > 0) return "bg-amber-500"; // In Progress
+    return "bg-slate-400"; // Not Started
+  };
 
   return (
-    <div
-      className={cx(
-        "w-full h-2 rounded bg-gray-100 overflow-hidden",
-        className
-      )}
-    >
-      <div className={cx("h-2 rounded", color)} style={{ width: `${pct}%` }} />
+    <div className="w-full">
+      <div className="flex justify-end mb-1">
+        <span className="text-xs font-medium text-gray-600">{progress}%</span>
+      </div>
+
+      <div className="h-3 w-full bg-gray-200 rounded-full overflow-hidden shadow-inner">
+        <div
+          className={`h-full ${getBarColor(
+            progress
+          )} transition-all duration-500`}
+          style={{ width: `${progress}%` }}
+        />
+      </div>
     </div>
   );
 }
