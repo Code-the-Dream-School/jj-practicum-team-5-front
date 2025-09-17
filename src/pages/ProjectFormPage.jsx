@@ -97,7 +97,7 @@ export default function ProjectFormPage() {
       if (!res.ok) throw new Error("Failed to create project");
 
       const newProject = await res.json();
-      navigate(`/project/${newProject._id}`);
+      navigate("/dashboard");
     } catch (err) {
       console.error(err);
       alert("Failed to create project");
