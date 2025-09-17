@@ -256,7 +256,7 @@ export default function StepPage() {
                       {meta.done}/{meta.total} tasks • {meta.progress}%
                     </div>
                   </div>
-                  <ProgressBar status={variant} value={meta.progress} />
+                  <ProgressBar status={variant} progress={meta.progress} />
                 </div>
               </div>
 

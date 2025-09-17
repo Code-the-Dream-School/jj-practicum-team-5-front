@@ -291,45 +291,42 @@ export default function ProjectPage() {
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
                           {/* Checkbox + title + button */}
-                          <div className="relative flex items-center justify-between mb-3 group">
-                            <div className="flex items-center gap-3">
-                              <input
-                                type="checkbox"
-                                checked={s.completed}
-                                disabled={hasSubtasks}
-                                onChange={(e) => {
-                                  if (hasSubtasks) return;
-                                  const steps = (current.steps || []).map(
-                                    (step) =>
-                                      String(step._id || step.id) ===
-                                      String(s._id || s.id)
-                                        ? {
-                                            ...step,
-                                            completed: e.target.checked,
-                                          }
-                                        : step
-                                  );
-                                  updateCurrentProject({ steps });
-                                }}
-                                className={`w-5 h-5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 ${
-                                  hasSubtasks
-                                    ? "opacity-50 cursor-not-allowed"
-                                    : ""
-                                }`}
-                              />
+                          <div className="relative flex items-baseline gap-3 mb-3 group">
+                            <input
+                              type="checkbox"
+                              checked={s.completed}
+                              disabled={hasSubtasks}
+                              onChange={(e) => {
+                                if (hasSubtasks) return;
+                                const steps = (current.steps || []).map(
+                                  (step) =>
+                                    String(step._id || step.id) ===
+                                    String(s._id || s.id)
+                                      ? {
+                                          ...step,
+                                          completed: e.target.checked,
+                                        }
+                                      : step
+                                );
+                                updateCurrentProject({ steps });
+                              }}
+                              className={`w-5 h-5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 ${
+                                hasSubtasks
+                                  ? "opacity-50 cursor-not-allowed"
+                                  : ""
+                              }`}
+                            />
 
-                              {hasSubtasks && (
-                                <div className="absolute -top-8 left-0 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                  You must complete all subtasks first
-                                </div>
-                              )}
+                            {hasSubtasks && (
+                              <div className="absolute -top-8 left-0 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                You must complete all subtasks first
+                              </div>
+                            )}
 
-                              <span className="text-lg font-semibold text-gray-900">
-                                {s.title}
-                              </span>
-                            </div>
+                            <span className="text-lg font-semibold text-gray-900">
+                              {s.title}
+                            </span>
 
-                            {/* Step Details button + hint below */}
                             <div className="flex flex-col items-center">
                               <Link
                                 to={`/project/${current._id}/step/${
