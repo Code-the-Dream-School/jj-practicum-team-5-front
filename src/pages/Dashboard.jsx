@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Timeline from "../components/TimeLine.jsx";
-import { derive } from "../utils/derive";
+import { derive, toVariant } from "../utils/derive";
 import ProgressBar from "../components/ProgressBar";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
@@ -17,39 +17,23 @@ const formatDate = (dateStr) => {
   });
 };
 
-// Background color for status badge
+// Get color for status badge
 const getStatusColor = (status) => {
   switch (status) {
     case "Completed":
-      return "bg-emerald-500";
+      return "bg-green-100 text-green-800 border border-green-200";
     case "In Progress":
-      return "bg-amber-500";
+      return "text-white border border-opacity-20 border-white bg-gradient-to-r from-blue-600 to-purple-600";
     case "Not Started":
-      return "bg-slate-400";
+      return "bg-purple-100 text-purple-800 border border-purple-200";
     case "Overdue":
-      return "bg-rose-500";
+      return "bg-red-100 text-red-800 border border-red-200";
     default:
-      return "bg-gray-400";
+      return "bg-gray-100 text-gray-800 border border-gray-200";
   }
 };
 
-// Text color depending on background
-const getStatusTextColor = (status) => {
-  if (status === "Completed" || status === "Overdue") {
-    return "#FFFFFF"; // white text on green or red
-  }
-  return "#3C0032"; // dark violet text on other backgrounds
-};
-
-// Text shadow depending on background
-const getStatusTextShadow = (status) => {
-  if (status === "Completed" || status === "Overdue") {
-    return "1px 1px 2px rgba(0,0,0,0.6)"; // dark shadow for white text
-  }
-  return "1px 1px 2px rgba(255,255,255,0.6)"; // light shadow for violet text
-};
-
-// Derive project meta info (progress + status)
+// Calculate project progress & status from its steps
 const getProjectMeta = (project) => {
   const steps = project.steps || [];
   const total = steps.length;
@@ -64,16 +48,12 @@ const getProjectMeta = (project) => {
   return { progress, status };
 };
 
-// Small statistic card
 const StatBlock = ({ label, count, gradient }) => (
-  <div className="bg-white bg-opacity-90 rounded-2xl p-4 sm:p-6 text-center shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-200">
-    <div
-      className="text-2xl sm:text-3xl font-bold mb-2"
-      style={{ color: gradient }}
-    >
+  <div className="bg-white bg-opacity-90 rounded-2xl p-6 text-center shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-200">
+    <div className="text-3xl font-bold mb-2" style={{ color: gradient }}>
       {count}
     </div>
-    <div className="text-gray-600 text-xs sm:text-sm font-medium">{label}</div>
+    <div className="text-gray-600 text-sm font-medium">{label}</div>
   </div>
 );
 
@@ -81,17 +61,14 @@ export default function Dashboard() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isUnauthorized, setIsUnauthorized] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const navigate = useNavigate();
 
-  // Fetch projects from API
   useEffect(() => {
     const fetchProjects = async () => {
       try {
         setLoading(true);
         setError(null);
-        setIsUnauthorized(false);
         const token = localStorage.getItem("authToken");
         if (!token) {
           navigate("/login");
@@ -101,16 +78,10 @@ export default function Dashboard() {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!response.ok) {
-          if (response.status === 401) {
-            setIsUnauthorized(true);
-            setError("Please log in to continue");
-          } else {
-            const errorText = await response.text();
-            setError(
-              `Failed to fetch projects: ${response.status} - ${errorText}`
-            );
-          }
-          return;
+          const errorText = await response.text();
+          throw new Error(
+            `Failed to fetch projects: ${response.status} - ${errorText}`
+          );
         }
         const result = await response.json();
         setProjects(result.projects || []);
@@ -123,187 +94,155 @@ export default function Dashboard() {
     fetchProjects();
   }, [navigate]);
 
-  // Items per slide depending on screen size
-  const getItemsPerSlide = () => {
-    if (typeof window !== "undefined") {
-      if (window.innerWidth < 768) return 1;
-      if (window.innerWidth < 1024) return 2;
-    }
-    return 3;
-  };
-
-  const [itemsPerSlide, setItemsPerSlide] = useState(getItemsPerSlide());
-
-  // Recalculate slides on resize
-  useEffect(() => {
-    const handleResize = () => {
-      setItemsPerSlide(getItemsPerSlide());
-      setCurrentSlide(0);
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  // Visible projects for current slide
   const visibleProjects = projects.slice(
-    currentSlide * itemsPerSlide,
-    currentSlide * itemsPerSlide + itemsPerSlide
+    currentSlide * 3,
+    currentSlide * 3 + 3
   );
 
-  // Stats aggregation
+  const nextSlide = () =>
+    setCurrentSlide((prev) => (prev + 1) % Math.ceil(projects.length / 3));
+  const prevSlide = () =>
+    setCurrentSlide(
+      (prev) =>
+        (prev - 1 + Math.ceil(projects.length / 3)) %
+        Math.ceil(projects.length / 3)
+    );
+
+  // Statistics
   const stats = projects.reduce(
     (acc, project) => {
-      const { status } = getProjectMeta(project);
+      const meta = getProjectMeta(project);
       acc.total += 1;
-      if (status === "Completed") acc.completed += 1;
-      else if (status === "In Progress") acc.inProgress += 1;
-      else if (status === "Overdue") acc.overdue += 1;
+      if (meta.status === "Completed") acc.completed += 1;
+      else if (meta.status === "In Progress") acc.inProgress += 1;
+      else if (meta.status === "Overdue") acc.overdue += 1;
       else acc.notStarted += 1;
       return acc;
     },
     { total: 0, completed: 0, inProgress: 0, overdue: 0, notStarted: 0 }
   );
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-700">Loading projects...</p>
+      </div>
+    );
+
+  if (error)
+    return (
+      <div className="min-h-screen flex items-center justify-center text-red-600">
+        Error: {error}
+      </div>
+    );
 
   return (
-    <div className="min-h-screen overflow-x-hidden relative">
-      {/* Background with fade */}
-      <div
-        className="absolute inset-0"
-        style={{
-          backgroundImage: `
-            linear-gradient(to top,
-              rgba(255,255,255,0) 15%,
-              rgba(255,255,255,1) 100%
-            ),
-            url('/images/mycelium.webp')`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      />
-
-      {/* Foreground */}
-      <section className="relative z-10">
-        <div className="relative z-10 py-6 sm:py-8">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+    <div className="min-h-screen">
+      {/* Projects section */}
+      <section className="relative">
+        <div className="relative z-10 py-12">
+          <div className="max-w-7xl mx-auto px-4 relative">
             {projects.length === 0 ? (
-              <div className="text-center py-4">No projects yet</div>
+              <div className="text-center py-12">
+                <div className="bg-white bg-opacity-90 rounded-2xl p-8 shadow-xl max-w-md mx-auto border border-gray-200">
+                  <div
+                    className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg"
+                    style={{ backgroundColor: "#004C5A" }}
+                  >
+                    <span className="text-white text-3xl">📋</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">
+                    No Projects Yet
+                  </h3>
+                  <p className="text-gray-600 mb-6 leading-relaxed">
+                    Start by creating your first event project and begin
+                    organizing your tasks efficiently
+                  </p>
+                  <button
+                    onClick={() => navigate("/projects/new")}
+                    className="inline-flex items-center px-8 py-4 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                    style={{
+                      background: "linear-gradient(to right, #008096, #96007E)",
+                    }}
+                  >
+                    Create First Project
+                  </button>
+                </div>
+              </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {visibleProjects.map((project) => {
-                    const { progress, status } = getProjectMeta(project);
+                    const meta = getProjectMeta(project);
 
                     return (
                       <div
                         key={project._id}
-                        className="bg-white bg-opacity-90 rounded-2xl p-4 sm:p-6 lg:p-8 shadow-xl border border-gray-200 transform transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 flex flex-col hover:bg-gray-100"
-                        style={{
-                          minHeight: "500px",
-                          maxHeight: "600px",
-                        }}
+                        className="bg-white bg-opacity-90 rounded-2xl p-8 shadow-xl border border-gray-200 transform transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 flex flex-col h-full hover:bg-gray-100"
                       >
-                        {/* Project image */}
-                        {project.image ? (
-                          <div className="mb-2 -mx-4 sm:-mx-6 lg:-mx-8 -mt-4 sm:-mt-6 lg:-mt-8 flex-shrink-0">
+                        {project.image && (
+                          <div className="mb-6 -mx-8 -mt-8">
                             <img
                               src={`${API_URL}${project.image}`}
                               alt={project.title}
-                              className="w-full h-32 sm:h-40 lg:h-48 object-cover rounded-t-2xl"
+                              className="w-full h-48 object-cover rounded-t-2xl"
                               onError={(e) => (e.target.style.display = "none")}
                             />
                           </div>
-                        ) : (
-                          <div className="mb-2 -mx-4 sm:-mx-6 lg:-mx-8 -mt-4 sm:-mt-6 lg:-mt-8 flex-shrink-0 h-32 sm:h-40 lg:h-48" />
                         )}
-
-                        {/* Status + Due Date */}
-                        <div className="flex items-center justify-between mb-2">
-                          <span
-                            className={`px-4 py-2 rounded-full text-sm font-semibold ${getStatusColor(
-                              status
-                            )}`}
-                            style={{
-                              color: getStatusTextColor(status),
-                              textShadow: getStatusTextShadow(status),
-                            }}
-                          >
-                            {status}
-                          </span>
-
-                          <div
-                            className="flex items-center px-3 py-2 rounded-md border text-sm"
-                            style={{
-                              backgroundColor: "rgba(171, 212, 246, 0.2)",
-                              borderColor: "#007A8E",
-                            }}
-                          >
-                            <span
-                              className="font-semibold mr-1"
-                              style={{ color: "#007A8E" }}
-                            >
-                              📅
-                            </span>
-                            <span
-                              className="font-bold"
-                              style={{ color: "#004C5A" }}
-                            >
-                              {formatDate(project.dueDate)}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Project title */}
-                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3 flex-shrink-0 line-clamp-2">
+                        <span
+                          className={`px-4 py-2 rounded-full text-xs font-semibold ${getStatusColor(
+                            meta.status
+                          )}`}
+                        >
+                          {meta.status}
+                        </span>
+                        <h3 className="text-xl font-bold text-gray-900 mb-3 mt-4">
                           {project.title}
                         </h3>
+                        <p className="text-gray-600 mb-4 leading-relaxed flex-grow">
+                          {project.description || ""}
+                        </p>
 
-                        {/* Project description */}
-                        <div className="mb-3 sm:mb-4 flex-grow min-h-0">
-                          <div className="max-h-16 sm:max-h-20 overflow-y-auto">
-                            <p className="text-gray-600 leading-relaxed text-xs sm:text-sm">
-                              {project.description ||
-                                "No description available"}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Timeline */}
                         <div
-                          className="mb-3 sm:mb-4 flex-grow min-h-0"
-                          style={{ minHeight: "80px", maxHeight: "120px" }}
+                          className="mb-4 flex justify-between items-center px-3 py-2 rounded-lg border"
+                          style={{
+                            backgroundColor: "rgba(171, 212, 246, 0.3)",
+                            borderColor: "#007A8E",
+                          }}
                         >
-                          {project.steps?.length > 0 ? (
-                            <div className="h-full overflow-y-auto">
-                              <Timeline
-                                steps={project.steps}
-                                onStepClick={(step) =>
-                                  navigate(
-                                    `/project/${project._id}/step/${step._id}`
-                                  )
-                                }
-                              />
-                            </div>
-                          ) : (
-                            <div className="h-full flex items-center justify-center text-gray-400 text-xs sm:text-sm">
-                              No steps defined
-                            </div>
-                          )}
+                          <span
+                            className="font-semibold text-sm"
+                            style={{ color: "#007A8E" }}
+                          >
+                            Due Date:
+                          </span>
+                          <span
+                            className="font-bold"
+                            style={{ color: "#004C5A" }}
+                          >
+                            {formatDate(project.dueDate)}
+                          </span>
                         </div>
 
-                        {/* Progress bar */}
-                        <div className="mb-3 sm:mb-4">
-                          <ProgressBar progress={progress} />
+                        {/* Project progress bar */}
+                        <div className="mb-4">
+                          <ProgressBar
+                            status={toVariant(meta.status)}
+                            value={meta.progress}
+                          />
                         </div>
 
-                        {/* Buttons */}
-                        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 mt-auto flex-shrink-0">
+                        {project.steps?.length > 0 && (
+                          <div className="mb-4 max-h-40 overflow-auto">
+                            <Timeline steps={project.steps} />
+                          </div>
+                        )}
+
+                        <div className="flex space-x-3 mt-auto">
                           <button
                             onClick={() => navigate(`/project/${project._id}`)}
-                            className="flex-1 text-white py-2 sm:py-3 px-4 sm:px-6 rounded-xl font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-1 text-xs sm:text-sm"
+                            className="flex-1 text-white py-3 px-6 rounded-xl font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-1"
                             style={{
                               background:
                                 "linear-gradient(to right, #008096, #96007E)",
@@ -313,7 +252,7 @@ export default function Dashboard() {
                           </button>
                           <button
                             onClick={() => navigate(`/project/${project._id}`)}
-                            className="px-4 sm:px-6 py-2 sm:py-3 border-2 text-gray-700 rounded-xl font-semibold transition-all duration-200 bg-white hover:bg-gray-50 hover:shadow-md text-xs sm:text-sm"
+                            className="px-6 py-3 border-2 text-gray-700 rounded-xl font-semibold transition-all duration-200 bg-white hover:bg-gray-50 hover:shadow-md"
                             style={{ borderColor: "#007A8E" }}
                           >
                             Edit
@@ -328,7 +267,7 @@ export default function Dashboard() {
           </div>
 
           {/* Statistics */}
-          <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+          <div className="mt-16 max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-6">
             <StatBlock
               label="Total Projects"
               count={stats.total}
