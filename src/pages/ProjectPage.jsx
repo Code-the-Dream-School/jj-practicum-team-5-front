@@ -281,19 +281,75 @@ export default function ProjectPage() {
                 {(current.steps || []).map((s) => {
                   const meta = derive(s);
                   const variant = toVariant(meta.status);
+                  const hasSubtasks = (s.subtasks || []).length > 0;
 
                   return (
-                    <Link
-                      to={`/project/${current._id}/step/${s._id || s.id}`}
+                    <div
                       key={s._id || s.id}
-                      className="block p-6 border border-gray-200 rounded-2xl bg-white bg-opacity-70 hover:bg-opacity-90 hover:shadow-lg transition"
+                      className="p-6 border border-gray-200 rounded-2xl bg-white bg-opacity-70 hover:bg-opacity-90 hover:shadow-lg transition"
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
-                          <div className="text-lg font-semibold text-gray-900 mb-3">
-                            {s.title}
+                          {/* Checkbox + title + button */}
+                          <div className="relative flex items-center justify-between mb-3 group">
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="checkbox"
+                                checked={s.completed}
+                                disabled={hasSubtasks}
+                                onChange={(e) => {
+                                  if (hasSubtasks) return;
+                                  const steps = (current.steps || []).map(
+                                    (step) =>
+                                      String(step._id || step.id) ===
+                                      String(s._id || s.id)
+                                        ? {
+                                            ...step,
+                                            completed: e.target.checked,
+                                          }
+                                        : step
+                                  );
+                                  updateCurrentProject({ steps });
+                                }}
+                                className={`w-5 h-5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 ${
+                                  hasSubtasks
+                                    ? "opacity-50 cursor-not-allowed"
+                                    : ""
+                                }`}
+                              />
+
+                              {hasSubtasks && (
+                                <div className="absolute -top-8 left-0 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                  You must complete all subtasks first
+                                </div>
+                              )}
+
+                              <span className="text-lg font-semibold text-gray-900">
+                                {s.title}
+                              </span>
+                            </div>
+
+                            {/* Step Details button + hint below */}
+                            <div className="flex flex-col items-center">
+                              <Link
+                                to={`/project/${current._id}/step/${
+                                  s._id || s.id
+                                }`}
+                                className="ml-2 px-3 py-1.5 text-white font-medium rounded-lg text-xs transition-all duration-200 shadow hover:shadow-md transform hover:-translate-y-0.5"
+                                style={{
+                                  background:
+                                    "linear-gradient(to right, #008096, #96007E)",
+                                }}
+                              >
+                                Step Details
+                              </Link>
+                              <p className="text-xs italic text-gray-400 mt-1 hover:text-gray-600">
+                                You can add subtasks inside
+                              </p>
+                            </div>
                           </div>
 
+                          {/* Due date input */}
                           <div className="flex items-center gap-3 mb-4 bg-gray-50 rounded-lg p-3">
                             <label className="text-sm font-medium text-gray-700">
                               Due date
@@ -303,16 +359,13 @@ export default function ProjectPage() {
                               value={
                                 s.dueDate ? s.dueDate.substring(0, 10) : ""
                               }
-                              onClick={(e) => e.stopPropagation()}
-                              onChange={(e) => {
-                                e.stopPropagation();
-                                setStepDueDate(s._id || s.id, e.target.value);
-                              }}
+                              onChange={(e) =>
+                                setStepDueDate(s._id || s.id, e.target.value)
+                              }
                               className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500 transition"
                             />
                           </div>
 
-                          {/* ✅ Fixed ProgressBar usage */}
                           <ProgressBar progress={meta.progress} />
                         </div>
 
@@ -333,7 +386,7 @@ export default function ProjectPage() {
                           </div>
                         </div>
                       </div>
-                    </Link>
+                    </div>
                   );
                 })}
               </div>
@@ -367,7 +420,6 @@ export default function ProjectPage() {
           </div>
         </div>
 
-        {/* Modal for adding a new step */}
         <NewStepModal
           open={showNewStep}
           onClose={() => setShowNewStep(false)}

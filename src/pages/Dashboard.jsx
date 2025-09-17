@@ -49,17 +49,27 @@ const getStatusTextShadow = (status) => {
   return "1px 1px 2px rgba(255,255,255,0.6)"; // light shadow for violet text
 };
 
-// Derive project meta info (progress + status)
+// Derive project meta info (progress + status) using derive()
 const getProjectMeta = (project) => {
   const steps = project.steps || [];
-  const total = steps.length;
-  const done = steps.filter((s) => derive(s).progress === 100).length;
+  if (steps.length === 0) {
+    return { progress: 0, status: "Not Started" };
+  }
 
-  const progress = total === 0 ? 0 : Math.round((done / total) * 100);
+  // Each step contributes 100 units, derive progress per step
+  const total = steps.length * 100;
+  const done = steps.reduce((sum, s) => sum + derive(s).progress, 0);
+  const progress = Math.round((done / total) * 100);
 
   let status = "Not Started";
   if (progress === 100) status = "Completed";
-  else if (done > 0) status = "In Progress";
+  else if (progress > 0) status = "In Progress";
+
+  // Check overdue if project has dueDate
+  const due = project.dueDate ? new Date(project.dueDate) : null;
+  if (due && !isNaN(due) && status !== "Completed" && due < new Date()) {
+    status = "Overdue";
+  }
 
   return { progress, status };
 };
@@ -189,6 +199,21 @@ export default function Dashboard() {
       <section className="relative z-10">
         <div className="relative z-10 py-6 sm:py-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+            {/* Add Project button */}
+            <div className="text-center mb-6">
+              <button
+                onClick={() => navigate("/projects/new")}
+                className="inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-sm sm:text-base"
+                style={{
+                  background: "linear-gradient(to right, #008096, #96007E)",
+                }}
+              >
+                {projects.length === 0
+                  ? "Create First Project"
+                  : "+ Add New Project"}
+              </button>
+            </div>
+
             {projects.length === 0 ? (
               <div className="text-center py-4">No projects yet</div>
             ) : (
