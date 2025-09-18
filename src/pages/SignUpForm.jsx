@@ -102,9 +102,7 @@ export default function SignUpForm() {
         setIsLoading(true);
 
         try {
-
             const res = await fetch(`${API_URL}/api/v1/auth`, {
-
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -122,7 +120,6 @@ export default function SignUpForm() {
 
             if (res.ok) {
                 localStorage.setItem("token", data.token);
-
                 navigate('/dashboard', { replace: true });
             } else {
                 alert(data.error || 'Registration failed');
@@ -130,122 +127,268 @@ export default function SignUpForm() {
         } catch (err) {
             console.error(err);
             alert('Network error. Please try again.');
-
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen flex flex-col items-center bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 py-12">
-            <div className="max-w-md w-full mx-auto">
-                <div className="text-center mb-8">
-                    <p className="text-gray-600">Create your account to get started using</p>
-                    <p className="text-gray-600 font-bold">Event Management System</p>
-                </div>
+        <div className="min-h-screen relative overflow-hidden">
+            <div
+                className="absolute inset-0"
+                style={{
+                    background: `
+                      linear-gradient(to bottom,
+                        rgba(171, 212, 246, 1) 0%,
+                        rgba(171, 212, 246, 0.7) 60%,
+                        rgba(171, 212, 246, 0.3) 100%
+                      )
+                    `,
+                }}
+            />
 
-                <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-8 shadow-2xl border border-gray-100 space-y-6">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">First Name</label>
-                            <input
-                                type="text"
-                                name="firstName"
-                                value={formData.firstName}
-                                onChange={handleChange}
-                                className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.firstName ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-gray-300 focus:border-blue-400'}`}
-                                placeholder="John"
-                            />
-                            {errors.firstName && <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>}
-                        </div>
+            <div className="absolute inset-0">
+                <div
+                    className="absolute inset-0 opacity-20"
+                    style={{
+                        backgroundImage: `url('/images/mycelium.webp')`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                    }}
+                />
+            </div>
 
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Last Name</label>
-                            <input
-                                type="text"
-                                name="lastName"
-                                value={formData.lastName}
-                                onChange={handleChange}
-                                className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.lastName ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-gray-300 focus:border-blue-400'}`}
-                                placeholder="Doe"
-                            />
-                            {errors.lastName && <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>}
-                        </div>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
-                        <input
-                            type="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.email ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-gray-300 focus:border-blue-400'}`}
-                            placeholder="test@example.com"
-                        />
-                        {isCheckingEmail && <p className="text-gray-500 text-sm">Checking...</p>}
-                        {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Password</label>
-                        <input
-                            type={showPassword ? "text" : "password"}
-                            name="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.password ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-gray-300 focus:border-blue-400'}`}
-                            placeholder="Enter your password"
-                        />
-                        {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Confirm Password</label>
-                        <input
-                            type={showConfirmPassword ? "text" : "password"}
-                            name="confirmPassword"
-                            value={formData.confirmPassword}
-                            onChange={handleChange}
-                            className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.confirmPassword ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-gray-300 focus:border-blue-400'}`}
-                            placeholder="Confirm your password"
-                        />
-                        {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
-                    </div>
-
-                    <div className="flex items-start">
-                        <input
-                            type="checkbox"
-                            name="agreeToTerms"
-                            checked={formData.agreeToTerms}
-                            onChange={handleChange}
-                            className="w-5 h-5 text-blue-600 border-2 border-gray-300 rounded focus:ring-blue-500 mt-1"
-                        />
-                        <label className="ml-3 text-sm text-gray-600">
-                            I agree to the{' '}
-                            <a href="#" className="text-blue-600 hover:text-blue-500 font-semibold">Terms and Conditions</a> and{' '}
-                            <a href="#" className="text-blue-600 hover:text-blue-500 font-semibold">Privacy Policy</a>
-                        </label>
-                    </div>
-                    {errors.agreeToTerms && <p className="text-red-500 text-sm">{errors.agreeToTerms}</p>}
-
-                    <button
-                        type="submit"
-                        disabled={isLoading}
-                        className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 transform ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 hover:scale-105 shadow-lg hover:shadow-2xl'} text-white`}
-                    >
-                        {isLoading ? "Creating Account..." : "Create Account"}
-                    </button>
-
-                    <div className="text-center mt-6 pt-6 border-t border-gray-200">
+            <div className="relative z-10 flex flex-col items-center justify-center min-h-screen py-12 px-4">
+                <div className="max-w-lg w-full mx-auto">
+                    <div className="text-center mb-8">
+                        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
+                            Create Your
+                            <span className="block" style={{ color: "#007A8E" }}>
+                                Account
+                            </span>
+                        </h1>
+                        <p className="text-xl text-gray-700 leading-relaxed mb-2">
+                            Join our Event Management System
+                        </p>
                         <p className="text-gray-600">
+                            Get started with organizing your projects efficiently
+                        </p>
+                    </div>
+
+                    <form
+                        onSubmit={handleSubmit}
+                        className="bg-white bg-opacity-90 rounded-2xl p-8 shadow-xl border border-gray-200 backdrop-blur-sm space-y-6"
+                    >
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                                <input
+                                    type="text"
+                                    name="firstName"
+                                    value={formData.firstName}
+                                    onChange={handleChange}
+                                    className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 focus:outline-none focus:ring-2 focus:border-transparent bg-white shadow-sm ${
+                                        errors.firstName
+                                            ? 'border-red-300 bg-red-50'
+                                            : 'border-gray-300 hover:border-gray-400'
+                                    }`}
+                                    style={{
+                                        focusRingColor: "#007A8E"
+                                    }}
+                                    onFocus={(e) => e.target.style.borderColor = "#007A8E"}
+                                    onBlur={(e) => e.target.style.borderColor = errors.firstName ? "#FCA5A5" : "#D1D5DB"}
+                                    placeholder="John"
+                                />
+                                {errors.firstName && <p className="text-red-600 text-sm mt-1 font-medium">{errors.firstName}</p>}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                                <input
+                                    type="text"
+                                    name="lastName"
+                                    value={formData.lastName}
+                                    onChange={handleChange}
+                                    className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 focus:outline-none focus:ring-2 focus:border-transparent bg-white shadow-sm ${
+                                        errors.lastName
+                                            ? 'border-red-300 bg-red-50'
+                                            : 'border-gray-300 hover:border-gray-400'
+                                    }`}
+                                    style={{
+                                        focusRingColor: "#007A8E"
+                                    }}
+                                    onFocus={(e) => e.target.style.borderColor = "#007A8E"}
+                                    onBlur={(e) => e.target.style.borderColor = errors.lastName ? "#FCA5A5" : "#D1D5DB"}
+                                    placeholder="Doe"
+                                />
+                                {errors.lastName && <p className="text-red-600 text-sm mt-1 font-medium">{errors.lastName}</p>}
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                            <input
+                                type="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 focus:outline-none focus:ring-2 focus:border-transparent bg-white shadow-sm ${
+                                    errors.email
+                                        ? 'border-red-300 bg-red-50'
+                                        : 'border-gray-300 hover:border-gray-400'
+                                }`}
+                                style={{
+                                    focusRingColor: "#007A8E"
+                                }}
+                                onFocus={(e) => e.target.style.borderColor = "#007A8E"}
+                                onBlur={(e) => e.target.style.borderColor = errors.email ? "#FCA5A5" : "#D1D5DB"}
+                                placeholder="your@email.com"
+                            />
+                            {isCheckingEmail && (
+                                <div className="flex items-center mt-2">
+                                    <div
+                                        className="animate-spin rounded-full h-4 w-4 border-b-2 mr-2"
+                                        style={{ borderColor: "#007A8E" }}
+                                    ></div>
+                                    <p className="text-gray-600 text-sm">Checking availability...</p>
+                                </div>
+                            )}
+                            {errors.email && <p className="text-red-600 text-sm mt-1 font-medium">{errors.email}</p>}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                            <div className="relative">
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    className={`w-full px-4 py-3 pr-12 rounded-xl border transition-all duration-200 focus:outline-none focus:ring-2 focus:border-transparent bg-white shadow-sm ${
+                                        errors.password
+                                            ? 'border-red-300 bg-red-50'
+                                            : 'border-gray-300 hover:border-gray-400'
+                                    }`}
+                                    style={{
+                                        focusRingColor: "#007A8E"
+                                    }}
+                                    onFocus={(e) => e.target.style.borderColor = "#007A8E"}
+                                    onBlur={(e) => e.target.style.borderColor = errors.password ? "#FCA5A5" : "#D1D5DB"}
+                                    placeholder="Enter your password"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                                >
+                                    {showPassword ? '🙈' : '👁️'}
+                                </button>
+                            </div>
+                            {errors.password && <p className="text-red-600 text-sm mt-1 font-medium">{errors.password}</p>}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+                            <div className="relative">
+                                <input
+                                    type={showConfirmPassword ? "text" : "password"}
+                                    name="confirmPassword"
+                                    value={formData.confirmPassword}
+                                    onChange={handleChange}
+                                    className={`w-full px-4 py-3 pr-12 rounded-xl border transition-all duration-200 focus:outline-none focus:ring-2 focus:border-transparent bg-white shadow-sm ${
+                                        errors.confirmPassword
+                                            ? 'border-red-300 bg-red-50'
+                                            : 'border-gray-300 hover:border-gray-400'
+                                    }`}
+                                    style={{
+                                        focusRingColor: "#007A8E"
+                                    }}
+                                    onFocus={(e) => e.target.style.borderColor = "#007A8E"}
+                                    onBlur={(e) => e.target.style.borderColor = errors.confirmPassword ? "#FCA5A5" : "#D1D5DB"}
+                                    placeholder="Confirm your password"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                                >
+                                    {showConfirmPassword ? '🙈' : '👁️'}
+                                </button>
+                            </div>
+                            {errors.confirmPassword && <p className="text-red-600 text-sm mt-1 font-medium">{errors.confirmPassword}</p>}
+                        </div>
+
+                        <div className="bg-white bg-opacity-50 rounded-xl p-4 border border-gray-200">
+                            <div className="flex items-start">
+                                <input
+                                    type="checkbox"
+                                    name="agreeToTerms"
+                                    checked={formData.agreeToTerms}
+                                    onChange={handleChange}
+                                    className="w-5 h-5 text-white border-2 border-gray-300 rounded focus:ring-2 mt-1"
+                                    style={{
+                                        accentColor: "#007A8E",
+                                        focusRingColor: "#007A8E"
+                                    }}
+                                />
+                                <label className="ml-3 text-sm text-gray-700 leading-relaxed">
+                                    I agree to the{' '}
+                                    <a
+                                        href="#"
+                                        className="font-semibold hover:underline transition-colors duration-200"
+                                        style={{ color: "#007A8E" }}
+                                    >
+                                        Terms and Conditions
+                                    </a> and{' '}
+                                    <a
+                                        href="#"
+                                        className="font-semibold hover:underline transition-colors duration-200"
+                                        style={{ color: "#007A8E" }}
+                                    >
+                                        Privacy Policy
+                                    </a>
+                                </label>
+                            </div>
+                            {errors.agreeToTerms && <p className="text-red-600 text-sm mt-2 font-medium">{errors.agreeToTerms}</p>}
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className={`w-full py-4 px-6 rounded-xl font-semibold text-white text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 ${
+                                isLoading ? 'opacity-70 cursor-not-allowed' : ''
+                            }`}
+                            style={{
+                                background: "linear-gradient(to right, #008096, #96007E)",
+                            }}
+                        >
+                            {isLoading ? (
+                                <span className="flex items-center justify-center">
+                                    <div
+                                        className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"
+                                    ></div>
+                                    Creating Account...
+                                </span>
+                            ) : (
+                                "Create Account"
+                            )}
+                        </button>
+                    </form>
+
+                    <div className="mt-8 text-center bg-white bg-opacity-90 rounded-2xl p-6 shadow-lg border border-gray-200">
+                        <p className="text-gray-700">
                             Already have an account?{' '}
-                            <button type="button" onClick={() => navigate('/login')} className="font-medium text-indigo-600 hover:text-indigo-800 hover:underline">
+                            <button
+                                type="button"
+                                onClick={() => navigate('/login')}
+                                className="font-semibold hover:underline transition-colors duration-200"
+                                style={{ color: "#007A8E" }}
+                            >
                                 Sign in here
                             </button>
                         </p>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     );
