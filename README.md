@@ -110,6 +110,7 @@ Timeline Visualization: Visual progress tracking for project steps
 
 Team collaboration features
 Email notifications for due dates
+AI integration for smart task recommendations and project insights
 
 **Screenshots**
 
