@@ -8,7 +8,7 @@ export function derive(step) {
   let progress, status;
 
   if (step?.completed) {
-    // ✅ completed flag always wins
+    // completed flag always wins
     progress = 100;
     status = "Completed";
   } else if (total > 0) {
@@ -23,10 +23,11 @@ export function derive(step) {
     status = "Not Started";
   }
 
-  // overdue check
-  const overdue = step?.dueDate
-    ? getDueInfo(step.dueDate, status === "Completed").overdue
-    : false;
+  //  Overdue check: if dueDate < today and not completed → Overdue
+  const overdue =
+    step?.dueDate &&
+    new Date(step.dueDate).setHours(0, 0, 0, 0) <
+      new Date().setHours(0, 0, 0, 0);
 
   if (overdue && status !== "Completed") {
     status = "Overdue";

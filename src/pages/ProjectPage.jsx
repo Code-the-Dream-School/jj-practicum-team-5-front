@@ -41,7 +41,7 @@ export default function ProjectPage() {
     fetchProject();
   }, [projectId]);
 
-  // Update project both locally and on server
+  // Helper to update project both locally and on server
   const updateCurrentProject = async (updates) => {
     if (!current) return;
     const token = localStorage.getItem("authToken");
@@ -139,7 +139,7 @@ export default function ProjectPage() {
     updateCurrentProject({ steps: [...steps, newStep] });
   };
 
-  // Derived values
+  // Derived flags
   const allStepsDone = useMemo(
     () => (current?.steps || []).every((s) => derive(s).progress === 100),
     [current?.steps]
@@ -150,7 +150,7 @@ export default function ProjectPage() {
   );
   const projectOverdue = projectDueInfo?.overdue;
 
-  // UI states: loading
+  // UI states
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#ABD4F6] to-[#ABD4F650]">
@@ -164,7 +164,6 @@ export default function ProjectPage() {
     );
   }
 
-  // UI states: error
   if (error || !current) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#ABD4F6] to-[#ABD4F650]">
@@ -205,7 +204,7 @@ export default function ProjectPage() {
 
         {/* Info + Image side by side */}
         <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6">
-          {/* Info block */}
+          {/* Info block centered */}
           <div className="flex-1 max-w-3xl bg-white bg-opacity-90 rounded-2xl shadow-xl p-6 backdrop-blur-sm mx-auto">
             {/* Header */}
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-gray-200 pb-4 mb-4">
@@ -254,7 +253,7 @@ export default function ProjectPage() {
                 Description
               </label>
               <textarea
-                className="w-full p-4 border border-gray-300 rounded-xl text-sm bg-white bg-opacity-70 focus:ring-2 focus:ring-blue-500 transition"
+                className="w-full p-4 border border-gray-300 rounded-xl text-sm italic bg-white bg-opacity-70 focus:ring-2 focus:ring-blue-500 transition"
                 placeholder="Project description…"
                 value={current.description || ""}
                 onChange={onChangeDescription}
@@ -284,29 +283,31 @@ export default function ProjectPage() {
                   const hasSubtasks = (s.subtasks || []).length > 0;
 
                   return (
-                    <div
+                    <Link
+                      to={`/project/${current._id}/step/${s._id || s.id}`}
                       key={s._id || s.id}
-                      className="p-6 border border-gray-200 rounded-2xl bg-white bg-opacity-70 hover:bg-opacity-90 hover:shadow-lg transition"
+                      className="block p-6 border border-gray-200 rounded-2xl bg-white bg-opacity-70 hover:bg-opacity-90 hover:shadow-lg transition"
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
-                          {/* Checkbox + title + button */}
+                          {/* Checkbox + header */}
+
                           <div className="relative flex items-baseline gap-3 mb-3 group">
+                            {/* Checkbox for marking step as completed */}
                             <input
                               type="checkbox"
                               checked={s.completed}
                               disabled={hasSubtasks}
+                              onClick={(e) => e.stopPropagation()} // prevent navigation when clicking
                               onChange={(e) => {
-                                if (hasSubtasks) return;
-                                const steps = (current.steps || []).map(
-                                  (step) =>
-                                    String(step._id || step.id) ===
-                                    String(s._id || s.id)
-                                      ? {
-                                          ...step,
-                                          completed: e.target.checked,
-                                        }
-                                      : step
+                                if (hasSubtasks) return; // block if subtasks exist
+                                const steps = (
+                                  current.steps || []
+                                ).map((step) =>
+                                  String(step._id || step.id) ===
+                                  String(s._id || s.id)
+                                    ? { ...step, completed: e.target.checked }
+                                    : step
                                 );
                                 updateCurrentProject({ steps });
                               }}
@@ -317,36 +318,25 @@ export default function ProjectPage() {
                               }`}
                             />
 
+                            {/* Tooltip if subtasks exist */}
                             {hasSubtasks && (
                               <div className="absolute -top-8 left-0 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                                 You must complete all subtasks first
                               </div>
                             )}
 
+                            {/* Step title */}
                             <span className="text-lg font-semibold text-gray-900">
                               {s.title}
                             </span>
 
-                            <div className="flex flex-col items-center">
-                              <Link
-                                to={`/project/${current._id}/step/${
-                                  s._id || s.id
-                                }`}
-                                className="ml-2 px-3 py-1.5 text-white font-medium rounded-lg text-xs transition-all duration-200 shadow hover:shadow-md transform hover:-translate-y-0.5"
-                                style={{
-                                  background:
-                                    "linear-gradient(to right, #008096, #96007E)",
-                                }}
-                              >
-                                Step Details
-                              </Link>
-                              <p className="text-xs italic text-gray-400 mt-1 hover:text-gray-600">
-                                You can add subtasks inside
-                              </p>
-                            </div>
+                            {/* Hint next to the title */}
+                            <span className="text-sm italic text-gray-400 ml-2 hover:text-gray-600">
+                              You can add subtasks inside
+                            </span>
                           </div>
 
-                          {/* Due date input */}
+                          {/* Due date */}
                           <div className="flex items-center gap-3 mb-4 bg-gray-50 rounded-lg p-3">
                             <label className="text-sm font-medium text-gray-700">
                               Due date
@@ -356,13 +346,16 @@ export default function ProjectPage() {
                               value={
                                 s.dueDate ? s.dueDate.substring(0, 10) : ""
                               }
-                              onChange={(e) =>
-                                setStepDueDate(s._id || s.id, e.target.value)
-                              }
+                              onClick={(e) => e.stopPropagation()}
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                setStepDueDate(s._id || s.id, e.target.value);
+                              }}
                               className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500 transition"
                             />
                           </div>
 
+                          {/* Progress bar with color */}
                           <ProgressBar progress={meta.progress} />
                         </div>
 
@@ -381,9 +374,22 @@ export default function ProjectPage() {
                           >
                             {meta.progress}%
                           </div>
+
+                          {/* Button: Step Details */}
+                          <Link
+                            to={`/project/${current._id}/step/${s._id || s.id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="ml-2 px-3 py-1.5 text-white font-medium rounded-lg text-xs transition-all duration-200 shadow hover:shadow-md transform hover:-translate-y-0.5"
+                            style={{
+                              background:
+                                "linear-gradient(to right, #008096, #96007E)",
+                            }}
+                          >
+                            Step Details
+                          </Link>
                         </div>
                       </div>
-                    </div>
+                    </Link>
                   );
                 })}
               </div>
@@ -403,16 +409,21 @@ export default function ProjectPage() {
                 No image
               </div>
             )}
+
             <div className="mt-3 w-full">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Update project image
+                Project Image
               </label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={onImageUpload}
-                className="block w-full text-sm text-gray-600"
-              />
+              <label className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-[#008096] to-[#96007E] text-white rounded-lg shadow cursor-pointer hover:opacity-90">
+                {current.image ? "Replace Image" : "Add Image"}
+                <input
+                  type="file"
+                  accept="image/png, image/jpeg"
+                  onChange={onImageUpload}
+                  className="hidden"
+                />
+              </label>
+              <p className="text-sm text-gray-500 mt-2">JPEG, PNG up to 5MB</p>
             </div>
           </div>
         </div>
