@@ -25,11 +25,11 @@ const TeamPage = () => {
         },
         {
             id: 3,
-            name: "Almira",
+            name: "Almira Koshkina",
             role: "Frontend Developer",
             description: "Builds intuitive user interfaces with modern frontend technologies. Focused on UX/UI and performance.",
             github: "https://github.com/AlmiraKoshkina",
-            linkedin: "https://linkedin.com",
+            linkedin: "https://www.linkedin.com/in/%D0%B0lmira-%D0%BAoshkina-502822338/",
             avatar: "https://avatars.githubusercontent.com/u/110123483?v=4",
             skills: ["React", "Tailwind CSS", "Figma"]
         },
