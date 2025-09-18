@@ -106,6 +106,74 @@ Interactive Elements: Hover effects and transition animations
 Status Indicators: Color-coded project and step statuses
 Timeline Visualization: Visual progress tracking for project steps
 
+**API Overview**
+
+The frontend communicates with a Node/Express backend via REST API.  
+Here are the main routes currently implemented:
+
+ Auth Routes
+- **POST `/auth`**  
+  Registers a new user.  
+  **Request body:**
+  ```json
+  {
+  "first": "Lisa",
+  "last": "Brauny",
+  "email": "lisa25@test.com",
+  "password": "Lisa1234567+"
+}
+
+Response:
+
+{
+"id": 1,
+"first": "Lisa",
+"last": "Brauny",
+"email": "lisa25@test.com",
+"token": "jwt-token-here"
+}
+
+
+POST /auth//loginUser
+Authenticates an existing user.
+Request body:
+
+{
+"email": "lisa25@test.com",
+"password": "Lisa1234567+"
+}
+
+
+Response:
+
+{
+"id": 1,
+"firstName": "Anna",
+"lastName": "Smith",
+"role": "customer",
+"token": "jwt-token-here"
+}
+
+
+Project Routes
+- **GET /api/projects**  
+  Fetch all projects for the authenticated user.
+
+- **GET /api/projects/:id**  
+  Fetch a single project by `id`.
+
+- **POST /api/projects**  
+  Create a new project.  
+  **Request Body (JSON):**
+  ```json
+  {
+    "title": "Website Redesign",
+    "description": "Redesign the landing page",
+    "dueDate": "2025-09-30",
+    "image": "https://example.com/image.png"
+  }
+
+
 **Future Enhancements**
 
 Team collaboration features
