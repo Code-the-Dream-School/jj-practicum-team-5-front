@@ -276,7 +276,7 @@ export default function Dashboard() {
               </div>
             ) : (
               <>
-                {/* Project cards (from Main Dashboard, with KAN-72 additions) */}
+                {/* Project cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {visibleProjects.map((project) => {
                     const { progress, status } = getProjectMeta(project); // KAN-72
