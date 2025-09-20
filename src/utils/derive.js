@@ -1,20 +1,37 @@
 import { getDueInfo } from "./due";
 
-// Progress/status of a step based on its subtasks and deadline
+// Progress/status of a step based on subtasks or its own "completed" flag
 export function derive(step) {
   const total = step?.subtasks?.length || 0;
   const done = step?.subtasks?.filter((t) => t.done).length || 0;
-  const progress = total ? Math.round((done / total) * 100) : 0;
 
-  const overdue = step?.dueDate
-    ? getDueInfo(step.dueDate, done === total).overdue
-    : false;
+  let progress, status;
 
-  let status = "Not Started";
-  if (overdue) status = "Overdue";
-  else if (done === 0) status = "Not Started";
-  else if (done === total) status = "Completed";
-  else status = "In Progress";
+  if (step?.completed) {
+    // completed flag always wins
+    progress = 100;
+    status = "Completed";
+  } else if (total > 0) {
+    // derive from subtasks
+    progress = Math.round((done / total) * 100);
+    if (done === 0) status = "Not Started";
+    else if (done === total) status = "Completed";
+    else status = "In Progress";
+  } else {
+    // no subtasks, rely on completed
+    progress = 0;
+    status = "Not Started";
+  }
+
+  //  Overdue check: if dueDate < today and not completed → Overdue
+  const overdue =
+    step?.dueDate &&
+    new Date(step.dueDate).setHours(0, 0, 0, 0) <
+      new Date().setHours(0, 0, 0, 0);
+
+  if (overdue && status !== "Completed") {
+    status = "Overdue";
+  }
 
   return { progress, status, total, done };
 }

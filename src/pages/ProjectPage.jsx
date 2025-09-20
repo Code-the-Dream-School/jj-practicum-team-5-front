@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import Badge from "../components/Badge";
@@ -18,6 +18,9 @@ export default function ProjectPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showNewStep, setShowNewStep] = useState(false);
+  const [imageDataUrl, setImageDataUrl] = useState(null);
+  const [fileName, setFileName] = useState("");
+  const fileInputRef = useRef(null);
 
   // Load project from backend
   useEffect(() => {
@@ -77,13 +80,44 @@ export default function ProjectPage() {
   };
 
   // Handle image upload
-  const onImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file || !current) return;
+  const onPickImage = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const MAX_MB = 3;
+    if (file.size > MAX_MB * 1024 * 1024) {
+      alert(`Image is too large (> ${MAX_MB}MB).`);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
+    setFileName(file.name);
+
+    const reader = new FileReader();
+    reader.onload = () => setImageDataUrl(String(reader.result));
+    reader.readAsDataURL(file);
+  };
+
+  const onRemoveImage = () => {
+    setImageDataUrl(null);
+    setFileName("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const onSaveImage = async () => {
+    if (!fileInputRef.current?.files[0] || !current) {
+      console.warn("No file selected or project not loaded");
+      return;
+    }
+
+    console.log("Saving image for project:", current._id);
+
+    const formData = new FormData();
+    formData.append("image", fileInputRef.current.files[0]);
 
     const token = localStorage.getItem("authToken");
-    const formData = new FormData();
-    formData.append("image", file);
 
     try {
       const res = await fetch(
@@ -95,10 +129,27 @@ export default function ProjectPage() {
         }
       );
 
-      if (!res.ok) throw new Error("Failed to upload image");
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`Failed to upload image: ${errText}`);
+      }
 
       const data = await res.json();
-      setCurrent((prev) => ({ ...prev, image: data.image }));
+      console.log("Upload response:", data);
+
+      const newImage = data.image || data.data?.image;
+
+      if (!newImage) {
+        console.error("⚠️ No image path in response:", data);
+        return;
+      }
+
+      setCurrent((prev) => ({ ...prev, image: newImage }));
+      setImageDataUrl(null);
+      setFileName("");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+
+      console.log("✅ Image updated:", newImage);
     } catch (err) {
       console.error("Image upload failed:", err);
     }
@@ -253,7 +304,7 @@ export default function ProjectPage() {
                 Description
               </label>
               <textarea
-                className="w-full p-4 border border-gray-300 rounded-xl text-sm bg-white bg-opacity-70 focus:ring-2 focus:ring-blue-500 transition"
+                className="w-full p-4 border border-gray-300 rounded-xl text-sm italic bg-white bg-opacity-70 focus:ring-2 focus:ring-blue-500 transition"
                 placeholder="Project description…"
                 value={current.description || ""}
                 onChange={onChangeDescription}
@@ -280,6 +331,8 @@ export default function ProjectPage() {
                 {(current.steps || []).map((s) => {
                   const meta = derive(s);
                   const variant = toVariant(meta.status);
+                  const hasSubtasks = (s.subtasks || []).length > 0;
+
                   return (
                     <Link
                       to={`/project/${current._id}/step/${s._id || s.id}`}
@@ -288,9 +341,55 @@ export default function ProjectPage() {
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
-                          <div className="text-lg font-semibold text-gray-900 mb-3">
-                            {s.title}
+                          {/* Checkbox + header */}
+
+                          <div className="relative flex items-baseline gap-3 mb-3 group">
+                            {/* Checkbox for marking step as completed */}
+
+                            <input
+                              type="checkbox"
+                              checked={
+                                hasSubtasks
+                                  ? meta.progress === 100
+                                  : s.completed
+                              }
+                              onClick={(e) => e.stopPropagation()}
+                              onChange={(e) => {
+                                if (hasSubtasks) return; // блокируем изменения руками
+                                const steps = (
+                                  current.steps || []
+                                ).map((step) =>
+                                  String(step._id || step.id) ===
+                                  String(s._id || s.id)
+                                    ? { ...step, completed: e.target.checked }
+                                    : step
+                                );
+                                updateCurrentProject({ steps });
+                              }}
+                              className={`w-5 h-5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 ${
+                                hasSubtasks ? "pointer-events-none" : ""
+                              }`}
+                            />
+
+                            {/* Tooltip if subtasks exist */}
+                            {hasSubtasks && (
+                              <div className="absolute -top-8 left-0 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                You must complete all subtasks first
+                              </div>
+                            )}
+
+                            {/* Step title */}
+                            <span className="text-lg font-semibold text-gray-900">
+                              {s.title}
+                            </span>
+
+                            {/* Hint next to the title */}
+                            <span className="text-sm italic text-gray-400 ml-2 hover:text-gray-600">
+                              You can add subtasks inside
+                            </span>
                           </div>
+
+                          {/* Due date */}
                           <div className="flex items-center gap-3 mb-4 bg-gray-50 rounded-lg p-3">
                             <label className="text-sm font-medium text-gray-700">
                               Due date
@@ -308,8 +407,11 @@ export default function ProjectPage() {
                               className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500 transition"
                             />
                           </div>
-                          <ProgressBar status={variant} value={meta.progress} />
+
+                          {/* Progress bar with color */}
+                          <ProgressBar progress={meta.progress} />
                         </div>
+
                         <div className="flex flex-col items-center gap-3 shrink-0">
                           <Badge status={variant}>{meta.status}</Badge>
                           <div
@@ -325,6 +427,19 @@ export default function ProjectPage() {
                           >
                             {meta.progress}%
                           </div>
+
+                          {/* Button: Step Details */}
+                          <Link
+                            to={`/project/${current._id}/step/${s._id || s.id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="ml-2 px-3 py-1.5 text-white font-medium rounded-lg text-xs transition-all duration-200 shadow hover:shadow-md transform hover:-translate-y-0.5"
+                            style={{
+                              background:
+                                "linear-gradient(to right, #008096, #96007E)",
+                            }}
+                          >
+                            Step Details
+                          </Link>
                         </div>
                       </div>
                     </Link>
@@ -335,29 +450,75 @@ export default function ProjectPage() {
           </div>
 
           {/* Image block */}
-          <div className="w-full lg:w-1/3 flex flex-col items-center">
-            {current.image ? (
+          <div className="w-full lg:w-1/3 flex flex-col items-center bg-white bg-opacity-90 p-4 rounded-2xl shadow-md">
+            {/* Current image */}
+            {current.image && !imageDataUrl && (
               <img
-                src={`${API_URL}${current.image}`}
+                src={`${API_URL}${current.image}?t=${Date.now()}`}
                 alt={current.title}
-                className="w-full h-auto object-contain max-h-96 rounded-2xl shadow-md"
+                className="w-full h-auto object-contain max-h-64 rounded-xl border"
               />
-            ) : (
-              <div className="w-full h-40 flex items-center justify-center bg-gray-100 border rounded-2xl text-gray-400">
-                No image
+            )}
+
+            {/* Preview of selected image */}
+            {imageDataUrl && (
+              <div className="mt-2 w-40 h-40 rounded-lg overflow-hidden border">
+                <img
+                  src={imageDataUrl}
+                  alt="Preview"
+                  className="object-cover w-full h-full"
+                />
               </div>
             )}
-            <div className="mt-3 w-full">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Update project image
+
+            {/* Selected file name */}
+            {fileName && (
+              <div className="mt-2 text-sm text-gray-600">
+                Selected: {fileName}
+              </div>
+            )}
+
+            {/* Buttons */}
+            <div className="mt-4 flex gap-3">
+              <label
+                htmlFor="project-image"
+                className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-[#008096] to-[#96007E] text-white rounded-lg shadow cursor-pointer hover:opacity-90"
+              >
+                {imageDataUrl
+                  ? "Change Image"
+                  : current.image
+                  ? "Replace Image"
+                  : "Add Image"}
               </label>
               <input
+                id="project-image"
                 type="file"
                 accept="image/*"
-                onChange={onImageUpload}
-                className="block w-full text-sm text-gray-600"
+                ref={fileInputRef}
+                onChange={onPickImage}
+                className="hidden"
               />
+
+              {imageDataUrl && (
+                <>
+                  <button
+                    type="button"
+                    onClick={onSaveImage}
+                    className="px-4 py-2 rounded-lg bg-green-600 text-white font-semibold shadow hover:bg-green-700"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={onRemoveImage}
+                    className="px-4 py-2 rounded-lg bg-red-600 text-white font-semibold shadow hover:bg-red-700"
+                  >
+                    Cancel
+                  </button>
+                </>
+              )}
             </div>
+
+            <p className="text-sm text-gray-500 mt-2">JPEG, PNG up to 5MB</p>
           </div>
         </div>
 
