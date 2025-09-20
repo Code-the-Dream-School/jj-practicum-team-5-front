@@ -345,13 +345,17 @@ export default function ProjectPage() {
 
                           <div className="relative flex items-baseline gap-3 mb-3 group">
                             {/* Checkbox for marking step as completed */}
+
                             <input
                               type="checkbox"
-                              checked={s.completed}
-                              disabled={hasSubtasks}
-                              onClick={(e) => e.stopPropagation()} // prevent navigation when clicking
+                              checked={
+                                hasSubtasks
+                                  ? meta.progress === 100
+                                  : s.completed
+                              }
+                              onClick={(e) => e.stopPropagation()}
                               onChange={(e) => {
-                                if (hasSubtasks) return; // block if subtasks exist
+                                if (hasSubtasks) return; // блокируем изменения руками
                                 const steps = (
                                   current.steps || []
                                 ).map((step) =>
@@ -363,9 +367,7 @@ export default function ProjectPage() {
                                 updateCurrentProject({ steps });
                               }}
                               className={`w-5 h-5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 ${
-                                hasSubtasks
-                                  ? "opacity-50 cursor-not-allowed"
-                                  : ""
+                                hasSubtasks ? "pointer-events-none" : ""
                               }`}
                             />
 
