@@ -192,7 +192,7 @@ export default function Dashboard() {
           <p className="text-gray-700 mb-4">{error}</p>
           <button
             onClick={handleTryAgain}
-            className="text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+            className="text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform"
             style={{
               background: "linear-gradient(to right, #008096, #96007E)",
             }}
@@ -229,7 +229,7 @@ export default function Dashboard() {
           {projects.length > 0 && (
             <button
               onClick={() => navigate("/projects/new")}
-              className="inline-flex items-center px-8 py-4 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              className="inline-flex items-center px-8 py-4 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform"
               style={{
                 background: "linear-gradient(to right, #008096, #96007E)",
               }}
@@ -280,7 +280,7 @@ export default function Dashboard() {
                   </p>
                   <button
                     onClick={() => navigate("/projects/new")}
-                    className="inline-flex items-center px-8 py-4 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                    className="inline-flex items-center px-8 py-4 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform"
                     style={{
                       background: "linear-gradient(to right, #008096, #96007E)",
                     }}
@@ -299,7 +299,7 @@ export default function Dashboard() {
                     return (
                       <div
                         key={project._id}
-                        className="bg-white bg-opacity-90 rounded-2xl p-8 shadow-xl border border-gray-200 transform transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 flex flex-col hover:bg-gray-100"
+                        className="bg-white bg-opacity-90 rounded-2xl p-8 shadow-xl border border-gray-200 transform transition-all duration-300 hover:shadow-2xl flex flex-col hover:bg-gray-100"
                       >
                         {/* Project image */}
                         {project.image && (
@@ -375,7 +375,7 @@ export default function Dashboard() {
                         <div className="flex space-x-3 mt-auto">
                           <button
                             onClick={() => navigate(`/project/${project._id}`)}
-                            className="flex-1 text-white py-3 px-6 rounded-xl font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-1"
+                            className="flex-1 text-white py-3 px-6 rounded-xl font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform"
                             style={{
                               background:
                                 "linear-gradient(to right, #008096, #96007E)",
