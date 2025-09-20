@@ -85,6 +85,8 @@ export default function StepPage() {
   };
 
   // Handlers
+  const setTitle = (val) => updateStep((s) => ({ ...s, title: val }));
+
   const setDescription = (val) =>
     updateStep((s) => ({ ...s, description: val }));
 
@@ -116,10 +118,7 @@ export default function StepPage() {
           : list.length + 1;
       return {
         ...s,
-        subtasks: [
-          ...list,
-          { id: nextId, title: "", done: false }, // placeholder only in UI
-        ],
+        subtasks: [...list, { id: nextId, title: "", done: false }],
       };
     });
 
@@ -187,9 +186,38 @@ export default function StepPage() {
               >
                 ← Back to Project
               </Link>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex-1">
-                Step: <span style={{ color: "#007A8E" }}>{step.title}</span>
-              </h1>
+              <div className="flex-1">
+                <label
+                  htmlFor="step-title"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Step Title
+                </label>
+                <input
+                  id="step-title"
+                  type="text"
+                  value={step.title || ""}
+                  onChange={(e) =>
+                    setProject({
+                      ...project,
+                      steps: (project.steps || []).map((s) =>
+                        String(s._id || s.id) === stepId
+                          ? { ...s, title: e.target.value }
+                          : s
+                      ),
+                    })
+                  }
+                  onBlur={(e) => setTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      setTitle(e.target.value);
+                      e.target.blur();
+                    }
+                  }}
+                  className="w-full text-2xl md:text-3xl font-bold text-gray-900 border border-gray-300 rounded-lg px-3 py-2 shadow-sm hover:shadow-md transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
               <div className="flex items-center gap-3">
                 <Badge status={variant}>{meta.status}</Badge>
                 <div className="text-right">
@@ -256,7 +284,7 @@ export default function StepPage() {
                       {meta.done}/{meta.total} tasks • {meta.progress}%
                     </div>
                   </div>
-                  <ProgressBar status={variant} value={meta.progress} />
+                  <ProgressBar status={variant} progress={meta.progress} />
                 </div>
               </div>
 
