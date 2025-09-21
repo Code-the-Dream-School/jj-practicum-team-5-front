@@ -335,10 +335,10 @@ export default function Dashboard() {
                         )}
                         <span
                           className={`px-4 py-2 rounded-full text-xs font-semibold ${getStatusColor(
-                            project.status
+                            status
                           )}`}
                         >
-                          {project.status}
+                          {status}
                         </span>
                         <h3 className="text-xl font-bold text-gray-900 mb-3 mt-4">
                           {project.title}
@@ -371,6 +371,11 @@ export default function Dashboard() {
                         {project.steps?.length > 0 && (
                           <Timeline steps={project.steps} />
                         )}
+
+                        {/* Progress bar */}
+                        <div className="mb-4">
+                          <ProgressBar progress={progress} />
+                        </div>
 
                         <div className="flex space-x-3 mt-auto">
                           {/*View/Edit*/}
