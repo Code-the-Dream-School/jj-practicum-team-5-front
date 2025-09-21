@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Timeline from "../components/TimeLine.jsx";
 import ProgressBar from "../components/ProgressBar";
 import { derive } from "../utils/derive";
+import ConfirmModal from "../components/ConfirmModal.jsx";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -73,6 +74,8 @@ export default function Dashboard() {
   const [error, setError] = useState(null);
   const [isUnauthorized, setIsUnauthorized] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
   const navigate = useNavigate();
 
   // Fetch projects
@@ -113,7 +116,6 @@ export default function Dashboard() {
     fetchProjects();
   }, [navigate]);
 
-  // Slider logic
   const visibleProjects = projects.slice(
     currentSlide * 3,
     currentSlide * 3 + 3
@@ -150,17 +152,40 @@ export default function Dashboard() {
   };
 
   // Loading screen
+  const handleDelete = (project) => {
+    setSelectedProject(project);
+    setConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!selectedProject) return;
+    try {
+      const token = localStorage.getItem("authToken");
+      await fetch(`${API_URL}/api/v1/projects/${selectedProject._id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setProjects((prev) => prev.filter((p) => p._id !== selectedProject._id));
+    } catch (err) {
+      alert("Error deleting project: " + err.message);
+    } finally {
+      setConfirmOpen(false);
+      setSelectedProject(null);
+    }
+  };
+
   if (loading)
     return (
       <div
         className="min-h-screen flex items-center justify-center"
         style={{
           background: `
-            linear-gradient(to bottom,
-              rgba(171, 212, 246, 1) 0%,
-              rgba(171, 212, 246, 0.7) 60%,
-              rgba(171, 212, 246, 0.3) 100%
-            )`,
+                       linear-gradient(to bottom,
+                         rgba(171, 212, 246, 1) 0%,
+                         rgba(171, 212, 246, 0.7) 60%,
+                         rgba(171, 212, 246, 0.3) 100%
+                       )
+                     `,
         }}
       >
         <div className="text-center bg-white bg-opacity-90 rounded-2xl p-8 shadow-xl border border-gray-200">
@@ -211,12 +236,13 @@ export default function Dashboard() {
           className="absolute inset-0"
           style={{
             background: `
-              linear-gradient(to bottom,
-                rgba(171, 212, 246, 1) 0%,
-                rgba(171, 212, 246, 0.9) 60%,
-                rgba(171, 212, 246, 0.5) 80%,
-                rgba(171, 212, 246, 0) 100%
-              )`,
+                          linear-gradient(to bottom,
+                            rgba(171, 212, 246, 1) 0%,
+                            rgba(171, 212, 246, 0.9) 60%,
+                            rgba(171, 212, 246, 0.5) 80%,
+                            rgba(171, 212, 246, 0) 100%
+                          )
+                        `,
           }}
         />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 z-10 text-center">
@@ -248,21 +274,19 @@ export default function Dashboard() {
             className="absolute inset-0"
             style={{
               backgroundImage: `
-                linear-gradient(to top,
-                  rgba(255,255,255,0) 10%,
-                  rgba(255,255,255,1) 100%
-                ),
-                url('/images/mycelium.webp')`,
+                                linear-gradient(to top,
+                                    rgba(255,255,255,0) 10%,
+                                    rgba(255,255,255,1) 100%
+                                ),
+                                url('/images/mycelium.webp')`,
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}
           />
         </div>
-
         <div className="relative z-10 py-4">
           <div className="max-w-7xl mx-auto px-4 relative">
             {projects.length === 0 ? (
-              // Empty state card (from Main Dashboard)
               <div className="text-center py-4">
                 <div className="bg-white bg-opacity-90 rounded-2xl p-8 shadow-xl max-w-md mx-auto border border-gray-200">
                   <div
@@ -291,17 +315,14 @@ export default function Dashboard() {
               </div>
             ) : (
               <>
-                {/* Project cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {visibleProjects.map((project) => {
                     const { progress, status } = getProjectMeta(project); // KAN-72
-
                     return (
                       <div
                         key={project._id}
                         className="bg-white bg-opacity-90 rounded-2xl p-8 shadow-xl border border-gray-200 transform transition-all duration-300 hover:shadow-2xl flex flex-col hover:bg-gray-100"
                       >
-                        {/* Project image */}
                         {project.image && (
                           <div className="mb-6 -mx-8 -mt-8">
                             <img
@@ -312,8 +333,6 @@ export default function Dashboard() {
                             />
                           </div>
                         )}
-
-                        {/* Status badge */}
                         <span
                           className={`px-4 py-2 rounded-full text-xs font-semibold ${getStatusColor(
                             status
@@ -321,18 +340,13 @@ export default function Dashboard() {
                         >
                           {status}
                         </span>
-
-                        {/* Project title */}
                         <h3 className="text-xl font-bold text-gray-900 mb-3 mt-4">
                           {project.title}
                         </h3>
-
-                        {/* Project description */}
                         <p className="text-gray-600 mb-4 leading-relaxed flex-grow">
                           {project.description || ""}
                         </p>
 
-                        {/* 📅 Due Date  */}
                         <div
                           className="mb-4 flex justify-between items-center px-3 py-2 rounded-lg border"
                           style={{
@@ -344,7 +358,7 @@ export default function Dashboard() {
                             className="font-semibold text-sm"
                             style={{ color: "#007A8E" }}
                           >
-                            📅
+                            Due Date:
                           </span>
                           <span
                             className="font-bold"
@@ -354,16 +368,8 @@ export default function Dashboard() {
                           </span>
                         </div>
 
-                        {/* Steps timeline */}
                         {project.steps?.length > 0 && (
-                          <Timeline
-                            steps={project.steps}
-                            onStepClick={(step) =>
-                              navigate(
-                                `/project/${project._id}/step/${step._id}`
-                              )
-                            }
-                          />
+                          <Timeline steps={project.steps} />
                         )}
 
                         {/* Progress bar */}
@@ -371,8 +377,8 @@ export default function Dashboard() {
                           <ProgressBar progress={progress} />
                         </div>
 
-                        {/* Action buttons */}
                         <div className="flex space-x-3 mt-auto">
+                          {/*View/Edit*/}
                           <button
                             onClick={() => navigate(`/project/${project._id}`)}
                             className="flex-1 text-white py-3 px-6 rounded-xl font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform"
@@ -381,14 +387,16 @@ export default function Dashboard() {
                                 "linear-gradient(to right, #008096, #96007E)",
                             }}
                           >
-                            View Details
+                            View / Edit
                           </button>
+
+                          {/*Delete*/}
                           <button
-                            onClick={() => navigate(`/project/${project._id}`)}
+                            onClick={() => handleDelete(project)}
                             className="px-6 py-3 border-2 text-gray-700 rounded-xl font-semibold transition-all duration-200 bg-white hover:bg-gray-50 hover:shadow-md"
-                            style={{ borderColor: "#007A8E" }}
+                            style={{ borderColor: "#DC2626" }}
                           >
-                            Edit
+                            Delete
                           </button>
                         </div>
                       </div>
@@ -427,7 +435,7 @@ export default function Dashboard() {
               </>
             )}
 
-            {/* Statistics  */}
+            {/* Statistics */}
             {projects.length > 0 && (
               <div className="mt-16 max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-6">
                 <StatBlock
@@ -453,8 +461,15 @@ export default function Dashboard() {
               </div>
             )}
           </div>
-        </div>
+        </div>{" "}
       </section>
+      {/* Confirm Modal */}
+      <ConfirmModal
+        isOpen={confirmOpen}
+        onCancel={() => setConfirmOpen(false)}
+        onConfirm={confirmDelete}
+        projectTitle={selectedProject?.title}
+      />
     </div>
   );
 }
