@@ -1,10 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+
 import Timeline from "../components/TimeLine.jsx";
+import ProgressBar from "../components/ProgressBar";
+import { derive } from "../utils/derive";
 import ConfirmModal from "../components/ConfirmModal.jsx";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
+// Format date for display
 const formatDate = (dateStr) => {
   if (!dateStr) return "No date";
   const date = new Date(dateStr);
@@ -15,18 +19,36 @@ const formatDate = (dateStr) => {
   });
 };
 
+// Calculate project progress and status
+const getProjectMeta = (project) => {
+  const steps = project.steps || [];
+  if (steps.length === 0) {
+    return { progress: 0, status: "Not Started" };
+  }
+
+  const total = steps.length * 100;
+  const done = steps.reduce((sum, s) => sum + derive(s).progress, 0);
+  const progress = Math.round((done / total) * 100);
+
+  let status = "Not Started";
+  if (progress === 100) status = "Completed";
+  else if (progress > 0) status = "In Progress";
+
+  const due = project.dueDate ? new Date(project.dueDate) : null;
+  if (due && !isNaN(due) && status !== "Completed" && due < new Date()) {
+    status = "Overdue";
+  }
+
+  return { progress, status };
+};
+
+// Status colors
 const getStatusColor = (status) => {
   switch (status?.toLowerCase()) {
     case "completed":
       return "bg-green-100 text-green-800 border border-green-200";
     case "in progress":
-      return (
-        "text-white border border-opacity-20" +
-        " " +
-        "border-white" +
-        " " +
-        "bg-gradient-to-r from-blue-600 to-purple-600"
-      );
+      return "text-white border border-opacity-20 border-white bg-gradient-to-r from-blue-600 to-purple-600";
     case "not started":
       return "bg-purple-100 text-purple-800 border border-purple-200";
     case "overdue":
@@ -36,6 +58,7 @@ const getStatusColor = (status) => {
   }
 };
 
+// Stats block
 const StatBlock = ({ label, count, gradient }) => (
   <div className="bg-white bg-opacity-90 rounded-2xl p-6 text-center shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-200">
     <div className="text-3xl font-bold mb-2" style={{ color: gradient }}>
@@ -49,16 +72,19 @@ export default function Dashboard() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isUnauthorized, setIsUnauthorized] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
   const navigate = useNavigate();
 
+  // Fetch projects
   useEffect(() => {
     const fetchProjects = async () => {
       try {
         setLoading(true);
         setError(null);
+        setIsUnauthorized(false);
         const token = localStorage.getItem("authToken");
         if (!token) {
           navigate("/login");
@@ -68,10 +94,16 @@ export default function Dashboard() {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(
-            `Failed to fetch projects: ${response.status} - ${errorText}`
-          );
+          if (response.status === 401) {
+            setIsUnauthorized(true);
+            setError("Please log in to continue");
+          } else {
+            const errorText = await response.text();
+            setError(
+              `Failed to fetch projects: ${response.status} - ${errorText}`
+            );
+          }
+          return;
         }
         const result = await response.json();
         setProjects(result.projects || []);
@@ -98,19 +130,28 @@ export default function Dashboard() {
         Math.ceil(projects.length / 3)
     );
 
+  // Stats aggregation
   const stats = projects.reduce(
     (acc, project) => {
-      const status = project.status?.toLowerCase() || "not started";
+      const { status } = getProjectMeta(project);
       acc.total += 1;
-      if (status === "completed") acc.completed += 1;
-      else if (status === "in progress") acc.inProgress += 1;
-      else if (status === "overdue") acc.overdue += 1;
+      if (status === "Completed") acc.completed += 1;
+      else if (status === "In Progress") acc.inProgress += 1;
+      else if (status === "Overdue") acc.overdue += 1;
       else acc.notStarted += 1;
       return acc;
     },
     { total: 0, completed: 0, inProgress: 0, overdue: 0, notStarted: 0 }
   );
+  const handleTryAgain = () => {
+    if (isUnauthorized) {
+      navigate("/login");
+    } else {
+      window.location.reload();
+    }
+  };
 
+  // Loading screen
   const handleDelete = (project) => {
     setSelectedProject(project);
     setConfirmOpen(true);
@@ -157,31 +198,31 @@ export default function Dashboard() {
       </div>
     );
 
+  // Error screen
   if (error)
     return (
       <div
         className="min-h-screen flex items-center justify-center"
         style={{
           background: `
-                       linear-gradient(to bottom,
-                         rgba(171, 212, 246, 1) 0%,
-                         rgba(171, 212, 246, 0.7) 60%,
-                         rgba(171, 212, 246, 0.3) 100%
-                       )
-                     `,
+            linear-gradient(to bottom,
+              rgba(171, 212, 246, 1) 0%,
+              rgba(171, 212, 246, 0.7) 60%,
+              rgba(171, 212, 246, 0.3) 100%
+            )`,
         }}
       >
         <div className="bg-white bg-opacity-90 rounded-2xl p-8 shadow-xl border border-gray-200 max-w-md text-center text-red-600">
           <h2 className="text-xl font-bold mb-2">Error</h2>
           <p className="text-gray-700 mb-4">{error}</p>
           <button
-            onClick={() => window.location.reload()}
-            className="text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+            onClick={handleTryAgain}
+            className="text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform"
             style={{
               background: "linear-gradient(to right, #008096, #96007E)",
             }}
           >
-            Try Again
+            {isUnauthorized ? "Go to Login" : "Try Again"}
           </button>
         </div>
       </div>
@@ -189,7 +230,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col">
-      {/* Hero section */}
+      {/* Hero section with gradient blue strip background */}
       <section className="relative overflow-hidden">
         <div
           className="absolute inset-0"
@@ -230,8 +271,9 @@ export default function Dashboard() {
         </div>
       </section>
 
-      {/* Projects section */}
+      {/* Projects section with mycelium background */}
       <section className="relative">
+        {/* Background with fade effect */}
         <div className="absolute inset-0">
           <div
             className="absolute inset-0"
@@ -326,7 +368,7 @@ export default function Dashboard() {
                           className="font-bold"
                           style={{ color: "#004C5A" }}
                         >
-                          {formatDate(project.dueDate)}
+                          {formatDate(project.date)}
                         </span>
                       </div>
 
@@ -350,7 +392,7 @@ export default function Dashboard() {
                         {/*Delete*/}
                         <button
                           onClick={() => handleDelete(project)}
-                          className="px-6 py-3 border-2 text-red-600 rounded-xl font-semibold transition-all duration-200 bg-white hover:bg-red-50 hover:shadow-md"
+                          className="px-6 py-3 border-2 text-gray-700 rounded-xl font-semibold transition-all duration-200 bg-white hover:bg-gray-50 hover:shadow-md"
                           style={{ borderColor: "#DC2626" }}
                         >
                           Delete
@@ -360,84 +402,36 @@ export default function Dashboard() {
                   ))}
                 </div>
 
-                {/* Slider Arrows */}
-                {projects.length > 3 && (
-                  <>
-                    <button
-                      onClick={prevSlide}
-                      className="absolute -left-12 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-90 p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 border"
-                      style={{ borderColor: "#007A8E" }}
-                      disabled={projects.length <= 3}
-                    >
-                      <svg
-                        className="w-6 h-6"
-                        style={{ color: "#007A8E" }}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 19l-7-7 7-7"
-                        />
-                      </svg>
-                    </button>
+                {/* Slider arrows removed */}
 
-                    <button
-                      onClick={nextSlide}
-                      className="absolute -right-12 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-90 p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 border"
-                      style={{ borderColor: "#007A8E" }}
-                      disabled={projects.length <= 3}
-                    >
-                      <svg
-                        className="w-6 h-6"
-                        style={{ color: "#007A8E" }}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 5l7 7-7 7"
-                        />
-                      </svg>
-                    </button>
-                  </>
-                )}
-
-                {/* Slider Dots */}
+                {/* Slider dots  */}
                 {Math.ceil(projects.length / 3) > 1 && (
                   <div className="flex justify-center mt-6 space-x-2">
-                    {Array.from({ length: Math.ceil(projects.length / 3) }).map(
-                      (_, index) => (
-                        <button
-                          key={index}
-                          onClick={() => setCurrentSlide(index)}
-                          className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                            currentSlide === index
-                              ? "bg-gradient-to-r from-blue-600 to-purple-600"
-                              : "bg-gray-300 hover:bg-gray-400"
-                          }`}
-                          style={
-                            currentSlide === index
-                              ? {
-                                  background:
-                                    "linear-gradient(to right, #008096, #96007E)",
-                                }
-                              : {}
-                          }
-                        />
-                      )
-                    )}
+                    {Array.from({
+                      length: Math.ceil(projects.length / 3),
+                    }).map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentSlide(index)}
+                        className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                          currentSlide === index
+                            ? "bg-gradient-to-r from-blue-600 to-purple-600"
+                            : "bg-gray-300 hover:bg-gray-400"
+                        }`}
+                        style={
+                          currentSlide === index
+                            ? {
+                                background:
+                                  "linear-gradient(to right, #008096, #96007E)",
+                              }
+                            : {}
+                        }
+                      />
+                    ))}
                   </div>
                 )}
               </>
             )}
-          </div>
 
           {/* Statistics */}
           {projects.length > 0 && (
@@ -466,14 +460,6 @@ export default function Dashboard() {
           )}
         </div>
       </section>
-
-      {/* Confirm Modal */}
-      <ConfirmModal
-        isOpen={confirmOpen}
-        onCancel={() => setConfirmOpen(false)}
-        onConfirm={confirmDelete}
-        projectTitle={selectedProject?.title}
-      />
     </div>
   );
 }
