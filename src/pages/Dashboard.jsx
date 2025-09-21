@@ -245,29 +245,24 @@ export default function Dashboard() {
                         `,
           }}
         />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 z-10">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
-              Event
-              <span className="block" style={{ color: "#007A8E" }}>
-                Projects
-              </span>
-            </h1>
-            <p className="text-xl text-gray-700 mb-8 max-w-2xl mx-auto leading-relaxed">
-              Manage and track all your event projects in one place
-            </p>
-            {projects.length > 0 && (
-              <button
-                onClick={() => navigate("/projects/new")}
-                className="inline-flex items-center px-8 py-4 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                style={{
-                  background: "linear-gradient(to right, #008096, #96007E)",
-                }}
-              >
-                Add New Project
-              </button>
-            )}
-          </div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 z-10 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
+            Event <span style={{ color: "#007A8E" }}>Projects</span>
+          </h1>
+          <p className="text-xl text-gray-700 mb-8 max-w-2xl mx-auto leading-relaxed">
+            Manage and track all your event projects in one place
+          </p>
+          {projects.length > 0 && (
+            <button
+              onClick={() => navigate("/projects/new")}
+              className="inline-flex items-center px-8 py-4 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform"
+              style={{
+                background: "linear-gradient(to right, #008096, #96007E)",
+              }}
+            >
+              Add New Project
+            </button>
+          )}
         </div>
       </section>
 
@@ -289,7 +284,6 @@ export default function Dashboard() {
             }}
           />
         </div>
-
         <div className="relative z-10 py-4">
           <div className="max-w-7xl mx-auto px-4 relative">
             {projects.length === 0 ? (
@@ -310,7 +304,7 @@ export default function Dashboard() {
                   </p>
                   <button
                     onClick={() => navigate("/projects/new")}
-                    className="inline-flex items-center px-8 py-4 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                    className="inline-flex items-center px-8 py-4 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform"
                     style={{
                       background: "linear-gradient(to right, #008096, #96007E)",
                     }}
@@ -322,84 +316,87 @@ export default function Dashboard() {
             ) : (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {visibleProjects.map((project) => (
-                    <div
-                      key={project._id}
-                      className="bg-white bg-opacity-90 rounded-2xl p-8 shadow-xl border border-gray-200 transform transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 flex flex-col hover:bg-gray-100"
-                    >
-                      {project.image && (
-                        <div className="mb-6 -mx-8 -mt-8">
-                          <img
-                            src={`${API_URL}${project.image}`}
-                            alt={project.title}
-                            className="w-full h-48 object-cover rounded-t-2xl"
-                            onError={(e) => (e.target.style.display = "none")}
-                          />
-                        </div>
-                      )}
-                      <span
-                        className={`px-4 py-2 rounded-full text-xs font-semibold ${getStatusColor(
-                          project.status
-                        )}`}
-                      >
-                        {project.status}
-                      </span>
-                      <h3 className="text-xl font-bold text-gray-900 mb-3 mt-4">
-                        {project.title}
-                      </h3>
-                      <p className="text-gray-600 mb-4 leading-relaxed flex-grow">
-                        {project.description || ""}
-                      </p>
-
+                  {visibleProjects.map((project) => {
+                    const { progress, status } = getProjectMeta(project); // KAN-72
+                    return (
                       <div
-                        className="mb-4 flex justify-between items-center px-3 py-2 rounded-lg border"
-                        style={{
-                          backgroundColor: "rgba(171, 212, 246, 0.3)",
-                          borderColor: "#007A8E",
-                        }}
+                        key={project._id}
+                        className="bg-white bg-opacity-90 rounded-2xl p-8 shadow-xl border border-gray-200 transform transition-all duration-300 hover:shadow-2xl flex flex-col hover:bg-gray-100"
                       >
+                        {project.image && (
+                          <div className="mb-6 -mx-8 -mt-8">
+                            <img
+                              src={`${API_URL}${project.image}`}
+                              alt={project.title}
+                              className="w-full h-48 object-cover rounded-t-2xl"
+                              onError={(e) => (e.target.style.display = "none")}
+                            />
+                          </div>
+                        )}
                         <span
-                          className="font-semibold text-sm"
-                          style={{ color: "#007A8E" }}
+                          className={`px-4 py-2 rounded-full text-xs font-semibold ${getStatusColor(
+                            project.status
+                          )}`}
                         >
-                          Due Date:
+                          {project.status}
                         </span>
-                        <span
-                          className="font-bold"
-                          style={{ color: "#004C5A" }}
-                        >
-                          {formatDate(project.date)}
-                        </span>
-                      </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-3 mt-4">
+                          {project.title}
+                        </h3>
+                        <p className="text-gray-600 mb-4 leading-relaxed flex-grow">
+                          {project.description || ""}
+                        </p>
 
-                      {project.steps?.length > 0 && (
-                        <Timeline steps={project.steps} />
-                      )}
-
-                      <div className="flex space-x-3 mt-auto">
-                        {/*View/Edit*/}
-                        <button
-                          onClick={() => navigate(`/project/${project._id}`)}
-                          className="flex-1 text-white py-3 px-6 rounded-xl font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-1"
+                        <div
+                          className="mb-4 flex justify-between items-center px-3 py-2 rounded-lg border"
                           style={{
-                            background:
-                              "linear-gradient(to right, #008096, #96007E)",
+                            backgroundColor: "rgba(171, 212, 246, 0.3)",
+                            borderColor: "#007A8E",
                           }}
                         >
-                          View / Edit
-                        </button>
+                          <span
+                            className="font-semibold text-sm"
+                            style={{ color: "#007A8E" }}
+                          >
+                            Due Date:
+                          </span>
+                          <span
+                            className="font-bold"
+                            style={{ color: "#004C5A" }}
+                          >
+                            {formatDate(project.dueDate)}
+                          </span>
+                        </div>
 
-                        {/*Delete*/}
-                        <button
-                          onClick={() => handleDelete(project)}
-                          className="px-6 py-3 border-2 text-gray-700 rounded-xl font-semibold transition-all duration-200 bg-white hover:bg-gray-50 hover:shadow-md"
-                          style={{ borderColor: "#DC2626" }}
-                        >
-                          Delete
-                        </button>
+                        {project.steps?.length > 0 && (
+                          <Timeline steps={project.steps} />
+                        )}
+
+                        <div className="flex space-x-3 mt-auto">
+                          {/*View/Edit*/}
+                          <button
+                            onClick={() => navigate(`/project/${project._id}`)}
+                            className="flex-1 text-white py-3 px-6 rounded-xl font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform"
+                            style={{
+                              background:
+                                "linear-gradient(to right, #008096, #96007E)",
+                            }}
+                          >
+                            View / Edit
+                          </button>
+
+                          {/*Delete*/}
+                          <button
+                            onClick={() => handleDelete(project)}
+                            className="px-6 py-3 border-2 text-gray-700 rounded-xl font-semibold transition-all duration-200 bg-white hover:bg-gray-50 hover:shadow-md"
+                            style={{ borderColor: "#DC2626" }}
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* Slider arrows removed */}
@@ -433,33 +430,41 @@ export default function Dashboard() {
               </>
             )}
 
-          {/* Statistics */}
-          {projects.length > 0 && (
-            <div className="mt-16 max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-6">
-              <StatBlock
-                label="Total Projects"
-                count={stats.total}
-                gradient="#B40098"
-              />
-              <StatBlock
-                label="Completed"
-                count={stats.completed}
-                gradient="#4C5A00"
-              />
-              <StatBlock
-                label="In Progress"
-                count={stats.inProgress}
-                gradient="#007A8E"
-              />
-              <StatBlock
-                label="Overdue"
-                count={stats.overdue}
-                gradient="#5A004C"
-              />
-            </div>
-          )}
-        </div>
+            {/* Statistics */}
+            {projects.length > 0 && (
+              <div className="mt-16 max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-6">
+                <StatBlock
+                  label="Total Projects"
+                  count={stats.total}
+                  gradient="#B40098"
+                />
+                <StatBlock
+                  label="Completed"
+                  count={stats.completed}
+                  gradient="#4C5A00"
+                />
+                <StatBlock
+                  label="In Progress"
+                  count={stats.inProgress}
+                  gradient="#007A8E"
+                />
+                <StatBlock
+                  label="Overdue"
+                  count={stats.overdue}
+                  gradient="#5A004C"
+                />
+              </div>
+            )}
+          </div>
+        </div>{" "}
       </section>
+      {/* Confirm Modal */}
+      <ConfirmModal
+        isOpen={confirmOpen}
+        onCancel={() => setConfirmOpen(false)}
+        onConfirm={confirmDelete}
+        projectTitle={selectedProject?.title}
+      />
     </div>
   );
 }
