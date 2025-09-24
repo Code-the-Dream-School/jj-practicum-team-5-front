@@ -404,7 +404,52 @@ export default function Dashboard() {
                   })}
                 </div>
 
-                {/* Slider arrows removed */}
+                {/* Slider arrows  */}
+                {projects.length > 3 && (
+                  <>
+                    <button
+                      onClick={prevSlide}
+                      className="absolute -left-12 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-90 p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 border"
+                      style={{ borderColor: "#007A8E" }}
+                    >
+                      <svg
+                        className="w-6 h-6"
+                        style={{ color: "#007A8E" }}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 19l-7-7 7-7"
+                        />
+                      </svg>
+                    </button>
+
+                    <button
+                      onClick={nextSlide}
+                      className="absolute -right-12 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-90 p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 border"
+                      style={{ borderColor: "#007A8E" }}
+                    >
+                      <svg
+                        className="w-6 h-6"
+                        style={{ color: "#007A8E" }}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </button>
+                  </>
+                )}
 
                 {/* Slider dots  */}
                 {Math.ceil(projects.length / 3) > 1 && (

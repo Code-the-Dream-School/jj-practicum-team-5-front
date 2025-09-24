@@ -97,25 +97,6 @@ export default function Timeline({ steps = [], onStepClick }) {
                 </div>
               )}
 
-              {/* Arrow to next */}
-              {index < displaySteps.length - 1 && (
-                <div className="absolute top-4 left-full ml-2">
-                  <svg
-                    className="w-4 h-4 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </div>
-              )}
-
               {/* +N more */}
               {index === displaySteps.length - 1 && hasMoreSteps && (
                 <div className="mt-1 text-xs text-gray-500">
