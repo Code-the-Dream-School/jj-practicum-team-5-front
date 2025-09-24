@@ -326,8 +326,7 @@ export default function Dashboard() {
                                         return (
                                             <div
                                                 key={project._id}
-                                                className="bg-white bg-opacity-90 rounded-2xl shadow-xl border border-gray-200 transform transition-all duration-300 hover:shadow-2xl flex flex-col hover:bg-gray-100 h-full" /* h-full для заполнения высоты */
-                                                style={{ minHeight: '550px' }}
+                                                className="bg-white bg-opacity-90 rounded-2xl shadow-xl border border-gray-200 transform transition-all duration-300 hover:shadow-2xl flex flex-col hover:bg-gray-100 min-h-[600px]"
                                             >
 
                                                 {hasImage && (
@@ -342,7 +341,7 @@ export default function Dashboard() {
                                                 )}
 
 
-                                                <div className="p-8 flex flex-col h-full">
+                                                <div className="p-8 flex flex-col min-h-[600px]">
 
                                                     <div className="mb-4">
                                                         <span
@@ -378,7 +377,7 @@ export default function Dashboard() {
 
                                                     <div className={`mb-4 flex-grow ${!hasDescription ? 'min-h-[60px]' : ''}`}>
                                                         <p className="text-gray-600 leading-relaxed line-clamp-3">
-                                                            {project.description || "No description provided"}
+                                                            {project.description || ""}
                                                         </p>
                                                     </div>
 
