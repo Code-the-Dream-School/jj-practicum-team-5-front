@@ -49,7 +49,7 @@ export default function Timeline({ steps = [], onStepClick }) {
   const hasMoreSteps = steps.length > 3;
 
   return (
-      <div className="p-4">
+      <div className="h-[120px] overflow-hidden flex items-center justify-center">
         <div className="flex items-start justify-center gap-8">
           {displaySteps.map((step, index) => {
             const meta = derive(step);
@@ -62,11 +62,11 @@ export default function Timeline({ steps = [], onStepClick }) {
                   {/* Circle */}
                   <div
                       className={`
-                  w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs
-                  border-2 cursor-pointer transition-all duration-300
-                  ${getStepColor(meta.status)}
-                  ${hoveredStep === step ? "scale-110 shadow-lg" : "shadow-md"}
-                `}
+                w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs
+                border-2 cursor-pointer transition-all duration-300
+                ${getStepColor(meta.status)}
+                ${hoveredStep === step ? "scale-110 shadow-lg" : "shadow-md"}
+              `}
                       onClick={() => {
                         if (onStepClick) {
                           onStepClick(step);
@@ -80,20 +80,12 @@ export default function Timeline({ steps = [], onStepClick }) {
                     {getStepIcon(meta.status)}
                   </div>
 
-                  {/* Label strictly under circle */}
-                  <div className="mt-2 text-center w-24 min-h-[40px] flex items-center justify-center">
+                  {/* Label under circle */}
+                  <div className="mt-2 text-center w-24 min-h-[32px] flex items-center justify-center">
                     <p className="text-xs text-gray-700 break-words line-clamp-2">
                       {step.title || `Step ${index + 1}`}
                     </p>
                   </div>
-
-                  {/* Tooltip */}
-                  {hoveredStep === step && (
-                      <div className="absolute mt-12 bg-gray-900 text-white px-2 py-1 rounded text-xs whitespace-nowrap z-50 shadow-xl">
-                        {step.description || step.title}
-                        <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
-                      </div>
-                  )}
 
                   {/* +N more */}
                   {index === displaySteps.length - 1 && hasMoreSteps && (
@@ -105,18 +97,7 @@ export default function Timeline({ steps = [], onStepClick }) {
             );
           })}
         </div>
-
-        {/* Fallback details panel when no onStepClick is passed */}
-        {!onStepClick && selectedStep && (
-            <div className="mt-4 bg-gray-50 rounded-lg p-3">
-              <h3 className="font-semibold text-sm text-gray-800">
-                {selectedStep.title}
-              </h3>
-              <p className="text-gray-600 text-xs mt-1">
-                {selectedStep.description || "No description"}
-              </p>
-            </div>
-        )}
       </div>
   );
+
 }
