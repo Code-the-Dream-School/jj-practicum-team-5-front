@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../contexts/AuthContext";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -20,6 +21,7 @@ export default function SignUpForm() {
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
 
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -131,6 +133,11 @@ export default function SignUpForm() {
       if (res.ok) {
         localStorage.setItem("authToken", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
+        localStorage.setItem('isAuthenticated', 'true');
+
+        if (data.token) {
+          login(data.token);
+        }
         navigate("/dashboard", { replace: true });
       } else {
         alert(data.error || "Registration failed");

@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect,useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../contexts/AuthContext";
 
 import Timeline from "../components/TimeLine.jsx";
 import ProgressBar from "../components/ProgressBar";
@@ -77,6 +78,13 @@ export default function Dashboard() {
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [selectedProject, setSelectedProject] = useState(null);
     const navigate = useNavigate();
+    const { logout } = useContext(AuthContext);
+
+
+    const handleLogout = () => {
+        logout();
+        navigate("/login");
+    };
 
     // Fetch projects
     useEffect(() => {
