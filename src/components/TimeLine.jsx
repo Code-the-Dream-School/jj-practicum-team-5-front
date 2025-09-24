@@ -39,9 +39,9 @@ export default function Timeline({ steps = [], onStepClick }) {
 
   if (!steps || steps.length === 0) {
     return (
-      <div className="text-center p-4">
-        <p className="text-gray-500 text-sm">No timeline available</p>
-      </div>
+        <div className="text-center p-4">
+          <p className="text-gray-500 text-sm">No timeline available</p>
+        </div>
     );
   }
 
@@ -49,95 +49,55 @@ export default function Timeline({ steps = [], onStepClick }) {
   const hasMoreSteps = steps.length > 3;
 
   return (
-    <div className="p-4">
-      <div className="flex items-start justify-center gap-8">
-        {displaySteps.map((step, index) => {
-          const meta = derive(step);
+      <div className="h-[120px] overflow-hidden flex items-center justify-center">
+        <div className="flex items-start justify-center gap-8">
+          {displaySteps.map((step, index) => {
+            const meta = derive(step);
 
-          return (
-            <div
-              key={`timeline-${step._id || step.id || index}`}
-              className="flex flex-col items-center"
-            >
-              {/* Circle */}
-              <div
-                className={`
-                  w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs
-                  border-2 cursor-pointer transition-all duration-300
-                  ${getStepColor(meta.status)}
-                  ${hoveredStep === step ? "scale-110 shadow-lg" : "shadow-md"}
-                `}
-                onClick={() => {
-                  // If external navigation handler is provided
-                  if (onStepClick) {
-                    onStepClick(step);
-                  } else {
-                    // fallback to local selection
-                    setSelectedStep(selectedStep?.id === step.id ? null : step);
-                  }
-                }}
-                onMouseEnter={() => setHoveredStep(step)}
-                onMouseLeave={() => setHoveredStep(null)}
-              >
-                {getStepIcon(meta.status)}
-              </div>
-
-              {/* Label strictly under circle */}
-              <div className="mt-2 text-center w-20">
-                <p className="text-xs text-gray-700 break-words">
-                  {step.title || `Step ${index + 1}`}
-                </p>
-              </div>
-
-              {/* Tooltip */}
-              {hoveredStep === step && (
-                <div className="absolute mt-12 bg-gray-900 text-white px-2 py-1 rounded text-xs whitespace-nowrap z-50 shadow-xl">
-                  {step.description || step.title}
-                  <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
-                </div>
-              )}
-
-              {/* Arrow to next */}
-              {index < displaySteps.length - 1 && (
-                <div className="absolute top-4 left-full ml-2">
-                  <svg
-                    className="w-4 h-4 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+            return (
+                <div
+                    key={`timeline-${step._id || step.id || index}`}
+                    className="flex flex-col items-center"
+                >
+                  {/* Circle */}
+                  <div
+                      className={`
+                w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs
+                border-2 cursor-pointer transition-all duration-300
+                ${getStepColor(meta.status)}
+                ${hoveredStep === step ? "scale-110 shadow-lg" : "shadow-md"}
+              `}
+                      onClick={() => {
+                        if (onStepClick) {
+                          onStepClick(step);
+                        } else {
+                          setSelectedStep(selectedStep?.id === step.id ? null : step);
+                        }
+                      }}
+                      onMouseEnter={() => setHoveredStep(step)}
+                      onMouseLeave={() => setHoveredStep(null)}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </div>
-              )}
+                    {getStepIcon(meta.status)}
+                  </div>
 
-              {/* +N more */}
-              {index === displaySteps.length - 1 && hasMoreSteps && (
-                <div className="mt-1 text-xs text-gray-500">
-                  +{steps.length - 3}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+                  {/* Label under circle */}
+                  <div className="mt-2 text-center w-24 min-h-[32px] flex items-center justify-center">
+                    <p className="text-xs text-gray-700 break-words line-clamp-2">
+                      {step.title || `Step ${index + 1}`}
+                    </p>
+                  </div>
 
-      {/* Fallback details panel when no onStepClick is passed */}
-      {!onStepClick && selectedStep && (
-        <div className="mt-4 bg-gray-50 rounded-lg p-3">
-          <h3 className="font-semibold text-sm text-gray-800">
-            {selectedStep.title}
-          </h3>
-          <p className="text-gray-600 text-xs mt-1">
-            {selectedStep.description || "No description"}
-          </p>
+                  {/* +N more */}
+                  {index === displaySteps.length - 1 && hasMoreSteps && (
+                      <div className="mt-1 text-xs text-gray-500">
+                        +{steps.length - 3}
+                      </div>
+                  )}
+                </div>
+            );
+          })}
         </div>
-      )}
-    </div>
+      </div>
   );
+
 }
