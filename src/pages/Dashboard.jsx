@@ -324,7 +324,7 @@ export default function Dashboard() {
                         ) : (
                             <>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 min-h-[600px]">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 min-h-[600px]">
                                     {visibleProjects.map((project) => {
                                         const { progress, status } = getProjectMeta(project);
                                         const hasImage = !!project.image;
