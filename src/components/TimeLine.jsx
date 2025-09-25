@@ -65,7 +65,7 @@ export default function Timeline({ steps = [], onStepClick }) {
                 w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs
                 border-2 cursor-pointer transition-all duration-300
                 ${getStepColor(meta.status)}
-                ${hoveredStep === step ? "scale-110 shadow-lg" : "shadow-md"}
+                ${hoveredStep === step ? "scale-110 shadow-lg" : "shadow-md"}${meta.status === "In Progress" ? "animate-spin" : ""}
               `}
                       onClick={() => {
                         if (onStepClick) {
